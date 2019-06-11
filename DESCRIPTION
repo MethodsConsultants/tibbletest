@@ -1,0 +1,13 @@
+Package: tibbletest
+Title: Clean Descriptives Tables with Significance Tests by Group
+Version: 0.1.0
+Authors@R: as.person(c(
+    "Michael Battaglia <mbattagl@methodsconsultants.com> [aut, cre]", 
+    "Caleb Scheidel <caleb@methodsconsultants.com> [aut]"
+  ))
+Description: 
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat
