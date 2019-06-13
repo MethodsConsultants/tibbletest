@@ -34,31 +34,6 @@ p_chi_fisher <- function(df, var, treatment) {
 
 }
 
-#' Helper function which calculates p-value via t-test
-#'
-#' @inheritParams p_chi_fisher
-#'
-#' @examples
-#'
-#' p_t_test(mtcars, var = "mpg", treatment = "vs")
-#'
-#' @return <`numeric(1)`> p-value
-#'
-#' @import purrr
-#'
-#' @noRd
-p_t_test <- function(df, var, treatment) {
-
-  df %>%
-    pull(var) %>%
-    split(df %>% pull(treatment)) %>%
-    set_names(c("x", "y")) %>%
-    do.call(stats::t.test, .) %>%
-    pluck("p.value")
-
-}
-
-
 #' Helper function which calculates p-value via anova
 #'
 #' @inheritParams p_chi_fisher
@@ -66,17 +41,16 @@ p_t_test <- function(df, var, treatment) {
 #' @return <`numeric(1)`> p-value
 #'
 #' @import dplyr
-#' @import purrr
+#' @import stats
 #'
 #' @noRd
 p_anova <- function(df, var, treatment) {
 
   form <- stats::as.formula(paste0(var, " ~ ", treatment))
-  stats::aov(form, df) %>%
-    summary() %>%
-    pluck(1) %>%
+  lm(form, df) %>%
+    anova() %>%
     pull(`Pr(>F)`) %>%
-    pluck(1)
+    purrr::pluck(1)
 
 }
 
@@ -94,31 +68,7 @@ p_kruskal <- function(df, var, treatment) {
 
 }
 
-#' Helper function which calculates p-value via Wilcoxon-Mann-Whitney Test
-#'
-#' @inheritParams p_chi_fisher
-#'
-#' @examples
-#'
-#' p_wilcox(mtcars, var = "mpg", treatment = "vs")
-#'
-#' @return <`numeric(1)`> p-value
-#'
-#' @import purrr
-#'
-#' @noRd
-p_wilcox <- function(df, var, treatment) {
-
-  df %>%
-    pull(var) %>%
-    split(df %>% pull(treatment)) %>%
-    set_names(c("x", "y")) %>%
-    do.call(stats::wilcox.test, .) %>%
-    pluck("p.value")
-
-}
-
-#' Helper function which calculates p-value via chi-square or fisher
+#' Helper function which calculates p-value via chi-square with weights
 #'
 #' @param df <`tbl_df`> Dataframe that has variable and treatment columns of interest
 #' @param var <`character(1)`> Name of variable column
@@ -141,7 +91,6 @@ p_chi_weighted <- function(df, var, treatment, weight_var) {
     purrr::pluck("p.value")
 
 }
-
 
 #' Helper function which returns whether or not the column is numeric
 #'
