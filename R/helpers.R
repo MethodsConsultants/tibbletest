@@ -44,15 +44,17 @@ p_chi_fisher <- function(df, var, treatment) {
 #'
 #' @return <`numeric(1)`> p-value
 #'
+#' @import purrr
+#'
 #' @noRd
 p_t_test <- function(df, var, treatment) {
 
   df %>%
     pull(var) %>%
     split(df %>% pull(treatment)) %>%
-    stats::setNames(c("x", "y")) %>%
+    set_names(c("x", "y")) %>%
     do.call(stats::t.test, .) %>%
-    `[[`("p.value")
+    pluck("p.value")
 
 }
 
@@ -63,11 +65,18 @@ p_t_test <- function(df, var, treatment) {
 #'
 #' @return <`numeric(1)`> p-value
 #'
+#' @import dplyr
+#' @import purrr
+#'
 #' @noRd
 p_anova <- function(df, var, treatment) {
 
   form <- stats::as.formula(paste0(var, " ~ ", treatment))
-  summary(stats::aov(form, df))[[1]]$`Pr(>F)`[1]
+  stats::aov(form, df) %>%
+    summary() %>%
+    pluck(1) %>%
+    pull(`Pr(>F)`) %>%
+    pluck(1)
 
 }
 
@@ -80,7 +89,8 @@ p_anova <- function(df, var, treatment) {
 #' @noRd
 p_kruskal <- function(df, var, treatment) {
 
-  stats::kruskal.test(df[[var]], df[[treatment]])$p.value
+  stats::kruskal.test(df[[var]], df[[treatment]]) %>%
+    purrr::pluck("p.value")
 
 }
 
@@ -94,15 +104,17 @@ p_kruskal <- function(df, var, treatment) {
 #'
 #' @return <`numeric(1)`> p-value
 #'
+#' @import purrr
+#'
 #' @noRd
 p_wilcox <- function(df, var, treatment) {
 
   df %>%
     pull(var) %>%
     split(df %>% pull(treatment)) %>%
-    stats::setNames(c("x", "y")) %>%
+    set_names(c("x", "y")) %>%
     do.call(stats::wilcox.test, .) %>%
-    `[[`("p.value")
+    pluck("p.value")
 
 }
 
@@ -126,7 +138,7 @@ p_chi_weighted <- function(df, var, treatment, weight_var) {
     paste0(" ~ ", ., " + ", quo_name(treatment)) %>%
     stats::as.formula() %>%
     svychisq(survey_obj) %>%
-    `[[`("p.value")
+    purrr::pluck("p.value")
 
 }
 
@@ -453,7 +465,6 @@ weighted_quantile <- function(x, weights, probs) {
   allq <- stats::approx(cumsum(wts), x, xout = c(low, high), method = "constant",
                  f = 1, rule = 2)$y
   (1 - order) * allq[1] + order * allq[-1]
-
 
 }
 
