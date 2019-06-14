@@ -7,7 +7,6 @@
 #' @examples
 #'
 #' p_chi_fisher(mtcars, var = "am", treatment = "vs")
-#'
 #' @return <`numeric(1)`> p-value
 #'
 #' @importFrom stats chisq.test fisher.test
@@ -16,24 +15,40 @@
 p_chi_fisher <- function(df, var, treatment) {
 
   chisq_wrapper <- function(var, df, treatment) {
-    table <- chisq.test(as.factor(df[[var]]), as.factor(df[[treatment]]))
+
+    table <- chisq.test(
+      x = as.factor(df[[var]]),
+      y = as.factor(df[[treatment]])
+    )
+
     return(table$p.value)
+
   }
 
   fisher_wrapper <- function(var, df, treatment) {
-    table <- fisher.test(as.factor(df[[var]]), as.factor(df[[treatment]]), simulate.p.value = TRUE)
+
+    table <- fisher.test(
+      x = as.factor(df[[var]]),
+      y = as.factor(df[[treatment]]),
+      simulate.p.value = TRUE
+    )
+
     return(table$p.value)
+
   }
 
   chisq_wrapper <- purrr::quietly(chisq_wrapper)
   chisq <- chisq_wrapper(var, df, treatment)
 
   if (length(chisq$warnings) == 0) {
-    return(chisq$result)
-  } else {
-    return(fisher_wrapper(var, df, treatment))
-  }
 
+    return(chisq$result)
+
+  } else {
+
+    return(fisher_wrapper(var, df, treatment))
+
+  }
 }
 
 #' Helper function which calculates p-value via anova
@@ -49,6 +64,7 @@ p_chi_fisher <- function(df, var, treatment) {
 p_anova <- function(df, var, treatment) {
 
   form <- as.formula(paste0(var, " ~ ", treatment))
+
   lm(form, df) %>%
     anova() %>%
     pull(`Pr(>F)`) %>%
@@ -67,7 +83,10 @@ p_anova <- function(df, var, treatment) {
 #' @noRd
 p_kruskal <- function(df, var, treatment) {
 
-  kruskal.test(df[[var]], df[[treatment]]) %>%
+  kruskal.test(
+    x = df[[var]],
+    g = df[[treatment]]
+  ) %>%
     purrr::pluck("p.value")
 
 }
@@ -93,16 +112,18 @@ is_numeric_variable <- function(df, var) {
     unique()
 
   logical <- vals %>%
-    `%in%`(c(0,1)) %>%
+    `%in%`(c(0, 1)) %>%
     all()
 
   if (length(vals) == 0) {
     logical <- FALSE
   }
 
-  if (logical) return(FALSE)
+  if (logical) {
+    return(FALSE)
+  }
 
-  is_bare_numeric(var)
+  purrr::is_bare_numeric(var)
 
 }
 
@@ -126,16 +147,18 @@ is_categorical_variable <- function(df, var) {
     unique()
 
   logical <- vals %>%
-    `%in%`(c(0,1)) %>%
+    `%in%`(c(0, 1)) %>%
     all()
 
   if (length(vals) == 0) {
     logical <- FALSE
   }
 
-  if (logical) return(TRUE)
+  if (logical) {
+    return(TRUE)
+  }
 
-  (is_bare_character(var) | is_bare_logical(var) | is.factor(var))
+  (purrr::is_bare_character(var) | purrr::is_bare_logical(var) | is.factor(var))
 
 }
 
@@ -181,19 +204,25 @@ add_spacing <- function(messy_table, is_treatment, p_value = NULL) {
   if (is_treatment) {
 
     # Setup empty matrix which will be filled in clean format.
-    clean_table <- matrix(data = "", nrow = (nrow(messy_table) + 1), ncol = (ncol(messy_table) + 2))
+    clean_table <- matrix(
+      data = "",
+      nrow = (nrow(messy_table) + 1),
+      ncol = (ncol(messy_table) + 2)
+    )
 
     # If logical label, leave variable name and p-values on same row as stats.
     if ((nrow(messy_table) == 1) & (messy_table[1, 1] == "")) {
 
       clean_table <- messy_table %>%
-        mutate(Variable = names(messy_table)[1],
-               `P Value` = p_value) %>%
+        mutate(
+          Variable = names(messy_table)[1],
+          `P Value` = p_value
+        ) %>%
         select(Variable, everything())
 
       colnames(clean_table) <- c("Variable", "Label", names(messy_table)[2:ncol(messy_table)], "P Value")
 
-      # Otherwise, fill empty matrix with correct spacing.
+    # Otherwise, fill empty matrix with correct spacing.
     } else {
 
       clean_table[2:nrow(clean_table), 2:(ncol(clean_table) - 1)] <- as.matrix(messy_table)
@@ -203,7 +232,6 @@ add_spacing <- function(messy_table, is_treatment, p_value = NULL) {
       colnames(clean_table) <- c("Variable", "Label", names(messy_table)[2:ncol(messy_table)], "P Value")
 
     }
-
   } else {
 
     clean_table <- matrix(data = "", nrow = (nrow(messy_table) + 1), ncol = (ncol(messy_table) + 1))
@@ -216,7 +244,7 @@ add_spacing <- function(messy_table, is_treatment, p_value = NULL) {
 
       colnames(clean_table) <- c("Variable", "Label", "N (%)")
 
-      # Otherwise fill labels with correct spacing.
+    # Otherwise fill labels with correct spacing.
     } else {
 
       clean_table[2:nrow(clean_table), 2:ncol(clean_table)] <- as.matrix(messy_table)
@@ -265,13 +293,16 @@ convert_logical <- function(df, var) {
       if (is_yes_no) {
 
         df <- df %>%
-          mutate(!!quo_name(var) := (!!var %>% str_trim() %>% str_to_lower()),
-                 !!quo_name(var) := case_when(
-                   !!var == "yes" ~ TRUE,
-                   !!var == "no" ~ FALSE,
-                   TRUE ~ NA
-                 ))
-
+          mutate(
+            !!quo_name(var) := (!!var %>%
+              str_trim() %>%
+              str_to_lower()),
+            !!quo_name(var) := case_when(
+              !!var == "yes" ~ TRUE,
+              !!var == "no" ~ FALSE,
+              TRUE ~ NA
+            )
+          )
       }
 
       is_true_false_str <- vals %>%
@@ -283,12 +314,16 @@ convert_logical <- function(df, var) {
       if (is_true_false_str) {
 
         df <- df %>%
-          mutate(!!quo_name(var) := (!!var %>% str_trim() %>% str_to_lower()),
-                 !!quo_name(var) := case_when(
-                   !!var == "true" ~ TRUE,
-                   !!var == "false" ~ FALSE,
-                   TRUE ~ NA
-                 ))
+          mutate(
+            !!quo_name(var) := (!!var %>%
+              str_trim() %>%
+              str_to_lower()),
+            !!quo_name(var) := case_when(
+              !!var == "true" ~ TRUE,
+              !!var == "false" ~ FALSE,
+              TRUE ~ NA
+            )
+          )
 
       }
     }
@@ -312,11 +347,13 @@ convert_logical <- function(df, var) {
       if (is_0_1) {
 
         df <- df %>%
-          mutate(!!quo_name(var) := case_when(
-            !!var == 1 ~ TRUE,
-            !!var == 0 ~ FALSE,
-            TRUE ~ NA
-          ))
+          mutate(
+            !!quo_name(var) := case_when(
+              !!var == 1 ~ TRUE,
+              !!var == 0 ~ FALSE,
+              TRUE ~ NA
+            )
+          )
 
       }
     }
@@ -342,6 +379,7 @@ remove_false <- function(tab, var, treatment = NULL) {
   labels <- pull(tab, !!var)
 
   if (is.logical(labels)) {
+
     if (length(labels) == 2) {
 
       tab <- tab %>%
@@ -355,19 +393,20 @@ remove_false <- function(tab, var, treatment = NULL) {
 
     } else if ((identical(labels, FALSE)) & (!is.null(treatment))) {
 
-      tab[1,] <- list("", "0 (0.00%)", "0 (0.00%)")
+      tab[1, ] <- list("", "0 (0.00%)", "0 (0.00%)")
 
     } else if ((identical(labels, FALSE)) & (is.null(treatment))) {
 
-      tab[1,] <- list("", "0 (0.00%)")
+      tab[1, ] <- list("", "0 (0.00%)")
 
     } else {
+
       stop("Logical label vector is not of expected structure")
+
     }
   }
 
   tab
-
 }
 
 #' Helper function which calculates a quantile of a vector with observation weights.
@@ -396,10 +435,11 @@ weighted_quantile <- function(x, weights, probs) {
   order <- 1 + (n - 1) * probs
   low <- pmax(floor(order), 1)
   high <- pmin(low + 1, n)
-  order <- order%%1
-  allq <- approx(cumsum(wts), x, xout = c(low, high), method = "constant",
-                 f = 1, rule = 2)$y
+  order <- order %% 1
+  allq <- approx(cumsum(wts), x,
+    xout = c(low, high), method = "constant",
+    f = 1, rule = 2
+  )$y
   (1 - order) * allq[1] + order * allq[-1]
 
 }
-
