@@ -1,10 +1,25 @@
-Test Example
+tibbletest
 ================
+
+[![Travis build
+status](https://travis-ci.org/MethodsConsultants/tibbletest.svg?branch=master)](https://travis-ci.org/MethodsConsultants/tibbletest)
+
+## Installation
+
+Install the development version from [GitHub](https://github.com/) with:
+
+``` r
+devtools::install_github("MethodsConsultants/tibbletest")
+```
+
+## Usage
 
 ``` r
 library(tibbletest)
 
-descriptives(example_dat, "treat", c("age", "sugar_factor", "gender", "happiness", "happy"))
+example_dat %>% 
+  descriptives(treatment = "treat",
+               variables = c("age", "sugar_factor", "gender", "happiness", "happy"))
 ```
 
     ## # A tibble: 9 x 4
