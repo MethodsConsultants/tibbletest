@@ -10,16 +10,18 @@
 #'
 #' @return <`numeric(1)`> p-value
 #'
+#' @importFrom stats chisq.test fisher.test
+#'
 #' @noRd
 p_chi_fisher <- function(df, var, treatment) {
 
   chisq_wrapper <- function(var, df, treatment) {
-    table <- stats::chisq.test(as.factor(df[[var]]), as.factor(df[[treatment]]))
+    table <- chisq.test(as.factor(df[[var]]), as.factor(df[[treatment]]))
     return(table$p.value)
   }
 
   fisher_wrapper <- function(var, df, treatment) {
-    table <- stats::fisher.test(as.factor(df[[var]]), as.factor(df[[treatment]]), simulate.p.value = TRUE)
+    table <- fisher.test(as.factor(df[[var]]), as.factor(df[[treatment]]), simulate.p.value = TRUE)
     return(table$p.value)
   }
 
@@ -41,12 +43,12 @@ p_chi_fisher <- function(df, var, treatment) {
 #' @return <`numeric(1)`> p-value
 #'
 #' @import dplyr
-#' @import stats
+#' @importFrom stats as.formula lm anova
 #'
 #' @noRd
 p_anova <- function(df, var, treatment) {
 
-  form <- stats::as.formula(paste0(var, " ~ ", treatment))
+  form <- as.formula(paste0(var, " ~ ", treatment))
   lm(form, df) %>%
     anova() %>%
     pull(`Pr(>F)`) %>%
@@ -60,34 +62,12 @@ p_anova <- function(df, var, treatment) {
 #'
 #' @return <`numeric(1)`> p-value
 #'
+#' @importFrom stats kruskal.test
+#'
 #' @noRd
 p_kruskal <- function(df, var, treatment) {
 
-  stats::kruskal.test(df[[var]], df[[treatment]]) %>%
-    purrr::pluck("p.value")
-
-}
-
-#' Helper function which calculates p-value via chi-square with weights
-#'
-#' @param df <`tbl_df`> Dataframe that has variable and treatment columns of interest
-#' @param var <`character(1)`> Name of variable column
-#' @param treatment <`character(1)`> Name of treatment column
-#' @param weight_var <`character(1)`> Name of weight column
-#'
-#' @return <`numeric(1)`> p-value
-#'
-#' @noRd
-p_chi_weighted <- function(df, var, treatment, weight_var) {
-
-  weight_var <- sym(weight_var)
-
-  survey_obj <- svydesign(~1, data = df, weights = df[[quo_name(weight_var)]])
-
-  quo_name(var) %>%
-    paste0(" ~ ", ., " + ", quo_name(treatment)) %>%
-    stats::as.formula() %>%
-    svychisq(survey_obj) %>%
+  kruskal.test(df[[var]], df[[treatment]]) %>%
     purrr::pluck("p.value")
 
 }
@@ -99,6 +79,8 @@ p_chi_weighted <- function(df, var, treatment, weight_var) {
 #'
 #' @return <`logical(1)`>
 #'
+#' @importFrom stats na.omit
+#'
 #' @keywords internal
 #' @noRd
 is_numeric_variable <- function(df, var) {
@@ -107,7 +89,7 @@ is_numeric_variable <- function(df, var) {
     pull(var)
 
   vals <- var %>%
-    stats::na.omit() %>%
+    na.omit() %>%
     unique()
 
   logical <- vals %>%
@@ -130,6 +112,8 @@ is_numeric_variable <- function(df, var) {
 #'
 #' @return <`logical(1)`>
 #'
+#' @importFrom stats na.omit
+#'
 #' @keywords internal
 #' @noRd
 is_categorical_variable <- function(df, var) {
@@ -138,7 +122,7 @@ is_categorical_variable <- function(df, var) {
     pull(var)
 
   vals <- var %>%
-    stats::na.omit() %>%
+    na.omit() %>%
     unique()
 
   logical <- vals %>%
@@ -256,6 +240,7 @@ add_spacing <- function(messy_table, is_treatment, p_value = NULL) {
 #'
 #' @import dplyr
 #' @import stringr
+#' @importFrom stats na.omit
 #'
 #' @keywords internal
 #' @noRd
@@ -266,7 +251,7 @@ convert_logical <- function(df, var) {
 
     vals <- df %>%
       pull(!!var) %>%
-      stats::na.omit() %>%
+      na.omit() %>%
       unique()
 
     if (length(vals) > 0) {
@@ -315,7 +300,7 @@ convert_logical <- function(df, var) {
     vals <- df %>%
       pull(!!var) %>%
       as.character() %>%
-      stats::na.omit() %>%
+      na.omit() %>%
       unique()
 
     if (length(vals) > 0) {
@@ -385,7 +370,7 @@ remove_false <- function(tab, var, treatment = NULL) {
 
 }
 
-#' Helper function which uses calculates a quantile of a vector with observation weights.
+#' Helper function which calculates a quantile of a vector with observation weights.
 #'
 #' @param x <`numeric`> Continuous vector of which we want to calculate a quantile
 #' @param weights <`numeric`> Nonnegative vector of observation weights
@@ -394,6 +379,7 @@ remove_false <- function(tab, var, treatment = NULL) {
 #' @return <`numeric(1)`>
 #'
 #' @import dplyr
+#' @importFrom stats approx
 #'
 #' @noRd
 weighted_quantile <- function(x, weights, probs) {
@@ -411,7 +397,7 @@ weighted_quantile <- function(x, weights, probs) {
   low <- pmax(floor(order), 1)
   high <- pmin(low + 1, n)
   order <- order%%1
-  allq <- stats::approx(cumsum(wts), x, xout = c(low, high), method = "constant",
+  allq <- approx(cumsum(wts), x, xout = c(low, high), method = "constant",
                  f = 1, rule = 2)$y
   (1 - order) * allq[1] + order * allq[-1]
 
