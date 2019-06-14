@@ -28,8 +28,11 @@ descriptives <- function(df, treatment = NULL, variables = NULL) {
   cat_vars <- variables[cat_lgl]
 
   if (any(!variables %in% c(cont_vars, cat_vars))) {
-    message("Variables (", paste(variables[!(variables %in% c(cont_vars, cat_vars))], collapse = ", "),
-            ") were skipped, type must be integer, double, character, logical, or factor")
+    message(
+      "Variables (",
+      paste(variables[!(variables %in% c(cont_vars, cat_vars))], collapse = ", "),
+      ") were skipped, type must be integer, double, character, logical, or factor"
+    )
   }
 
   if (length(cat_vars) == 0 & length(cont_vars) == 0) {
@@ -79,7 +82,11 @@ cat_func <- function(df, cat_vars, treatment) {
 
     df %>%
       count(!!!cat_vars) %>%
-      gather(Variable, Label, !!!cat_vars) %>%
+      gather(
+        key = Variable,
+        value = Label,
+        !!!cat_vars
+      ) %>%
       group_by(Variable, Label) %>%
       summarise_all(sum) %>%
       ungroup() %>%
@@ -96,7 +103,11 @@ cat_func <- function(df, cat_vars, treatment) {
     df %>%
       drop_na(!!treatment) %>%
       count(!!treatment, !!!cat_vars) %>%
-      gather(Variable, Label, !!!cat_vars) %>%
+      gather(
+        key = Variable,
+        value = Label,
+        !!!cat_vars
+      ) %>%
       group_by(!!treatment, Variable, Label) %>%
       summarise_all(sum) %>%
       ungroup() %>%
@@ -105,7 +116,10 @@ cat_func <- function(df, cat_vars, treatment) {
       mutate(Statistics = proportions(n)) %>%
       ungroup() %>%
       select(-n) %>%
-      spread(!!treatment, Statistics)
+      spread(
+        key = !!treatment,
+        value = Statistics
+      )
 
   }
 }
@@ -137,9 +151,19 @@ mean_sd_func <- function(df, cont_vars, treatment) {
 
     df %>%
       summarise_at(var_named, list("Mean" = Mean, "SD" = SD)) %>%
-      gather("Variable", "val") %>%
-      separate(Variable, c("Variable", "mean_sd"), "_(?!.*_)") %>%
-      spread(key = mean_sd, value = val) %>%
+      gather(
+        key = "Variable",
+        value = "val"
+      ) %>%
+      separate(
+        col = Variable,
+        into = c("Variable", "mean_sd"),
+        sep = "_(?!.*_)"
+      ) %>%
+      spread(
+        key = mean_sd,
+        value = val
+      ) %>%
       mutate(mean_sd = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
       select(-Mean, -SD) %>%
       rename(Statistics = mean_sd)
@@ -160,5 +184,4 @@ mean_sd_func <- function(df, cont_vars, treatment) {
       spread(!!treatment, mean_sd)
 
   }
-
 }

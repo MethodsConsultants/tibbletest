@@ -39,21 +39,34 @@ simple_tbl <- tibble::tribble(
 
 test_that("descriptives produces correct output", {
 
-  treat_out <- descriptives(example_dat, "treat", c("age", "sugar_factor", "gender", "happiness", "happy"))
+  treat_out <- example_dat %>%
+    descriptives(
+      treatment = "treat",
+      variables = c("age", "sugar_factor", "gender", "happiness", "happy")
+    )
   expect_equal(treat_out, treatment_tbl)
 
   treat_out2 <- example_dat %>%
     dplyr::select(-treat2, -weight, -no_weight) %>%
-    descriptives("treat")
+    descriptives(treatment = "treat")
   expect_equal(treat_out2, treatment_tbl)
 
-  cat_out <- descriptives(example_dat, "treat", "happiness")
+  cat_out <- example_dat %>%
+    descriptives(
+      treatment = "treat",
+      variables = "happiness"
+    )
   expect_equal(cat_out, cat_tbl)
 
-  cont_out <- descriptives(example_dat, "treat", c("age", "sugar_factor"))
+  cont_out <- example_dat %>%
+    descriptives(
+      treatment = "treat",
+      variables = c("age", "sugar_factor")
+    )
   expect_equal(cont_out, cont_tbl)
 
-  simple_out <- descriptives(example_dat, variables = c("age", "sugar_factor", "gender", "happiness", "happy"))
+  simple_out <- example_dat %>%
+    descriptives(variables = c("age", "sugar_factor", "gender", "happiness", "happy"))
   expect_equal(simple_out, simple_tbl)
 
 })

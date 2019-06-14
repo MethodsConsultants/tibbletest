@@ -18,8 +18,10 @@ devtools::install_github("MethodsConsultants/tibbletest")
 library(tibbletest)
 
 example_dat %>% 
-  descriptives(treatment = "treat",
-               variables = c("age", "sugar_factor", "gender", "happiness", "happy"))
+  descriptives(
+    treatment = "treat", 
+    variables = c("age", "sugar_factor", "gender", "happiness", "happy")
+  )
 ```
 
     ## # A tibble: 9 x 4
