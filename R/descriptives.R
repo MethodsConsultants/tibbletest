@@ -100,8 +100,12 @@ cat_func <- function(df, cat_vars, treatment) {
 
     treatment <- sym(treatment)
 
+    df <- df %>%
+      drop_na(!!treatment)
+
+    p_chi_fisher <- possibly(p_chi_fisher, NA_real_)
+
     df %>%
-      drop_na(!!treatment) %>%
       count(!!treatment, !!!cat_vars) %>%
       gather(
         key = Variable,
@@ -119,7 +123,8 @@ cat_func <- function(df, cat_vars, treatment) {
       spread(
         key = !!treatment,
         value = Statistics
-      )
+      ) %>%
+      mutate(`P Value` = map_dbl(Variable, p_chi_fisher, df = df, treatment = quo_name(treatment)))
 
   }
 }
@@ -172,8 +177,12 @@ mean_sd_func <- function(df, cont_vars, treatment) {
 
     treatment <- sym(treatment)
 
+    df <- df %>%
+      drop_na(!!treatment)
+
+    p_anova <- possibly(p_anova, NA_real_)
+
     df %>%
-      drop_na(!!treatment) %>%
       group_by(!!treatment) %>%
       summarise_at(var_named, list("Mean" = Mean, "SD" = SD)) %>%
       gather("Variable", "val", -!!treatment) %>%
@@ -181,7 +190,8 @@ mean_sd_func <- function(df, cont_vars, treatment) {
       spread(key = mean_sd, value = val) %>%
       mutate(mean_sd = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
       select(-Mean, -SD) %>%
-      spread(!!treatment, mean_sd)
+      spread(!!treatment, mean_sd) %>%
+      mutate(`P Value` = map_dbl(Variable, p_anova, df = df, treatment = quo_name(treatment)))
 
   }
 }

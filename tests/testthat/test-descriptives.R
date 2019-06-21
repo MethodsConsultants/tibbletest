@@ -1,26 +1,26 @@
 treatment_tbl <- tibble::tribble(
-        ~Variable,   ~Label,          ~candy,    ~`ice cream`,
-         "gender", "female",  "124 (48.25%)",  "110 (45.27%)",
-         "gender",   "male",  "133 (51.75%)",  "133 (54.73%)",
-      "happiness",  "happy",  "185 (76.76%)",   "181 (78.7%)",
-      "happiness",    "sad",   "56 (23.24%)",    "49 (21.3%)",
-          "happy",     "no",   "56 (23.24%)",    "49 (21.3%)",
-          "happy",    "yes",    "47 (19.5%)",   "44 (19.13%)",
-          "happy",    "Yes",  "138 (57.26%)",  "137 (59.57%)",
-            "age",       "", "42.26 (22.62)", "42.39 (21.61)",
-   "sugar_factor",       "",    "0.46 (0.3)",   "0.52 (0.29)"
+       ~Variable,   ~Label,          ~candy,    ~`ice cream`,         ~`P Value`,
+        "gender", "female",  "124 (48.25%)",  "110 (45.27%)",   0.56317088298012,
+        "gender",   "male",  "133 (51.75%)",  "133 (54.73%)",   0.56317088298012,
+     "happiness",  "happy",  "185 (76.76%)",   "181 (78.7%)",  0.694415226643762,
+     "happiness",    "sad",   "56 (23.24%)",    "49 (21.3%)",  0.694415226643762,
+         "happy",     "no",   "56 (23.24%)",    "49 (21.3%)",  0.855356296516553,
+         "happy",    "yes",    "47 (19.5%)",   "44 (19.13%)",  0.855356296516553,
+         "happy",    "Yes",  "138 (57.26%)",  "137 (59.57%)",  0.855356296516553,
+           "age",       "", "42.26 (22.62)", "42.39 (21.61)",  0.946208619349777,
+  "sugar_factor",       "",    "0.46 (0.3)",   "0.52 (0.29)", 0.0128504785023786
 )
 
 cont_tbl <- tibble::tribble(
-       ~Variable,          ~candy,    ~`ice cream`,
-           "age", "42.26 (22.62)", "42.39 (21.61)",
-  "sugar_factor",    "0.46 (0.3)",   "0.52 (0.29)"
+       ~Variable,          ~candy,    ~`ice cream`,         ~`P Value`,
+           "age", "42.26 (22.62)", "42.39 (21.61)",  0.946208619349777,
+  "sugar_factor",    "0.46 (0.3)",   "0.52 (0.29)", 0.0128504785023786
 )
 
 cat_tbl <- tibble::tribble(
-    ~Variable,  ~Label,         ~candy,  ~`ice cream`,
-  "happiness", "happy", "185 (76.76%)", "181 (78.7%)",
-  "happiness",   "sad",  "56 (23.24%)",  "49 (21.3%)"
+    ~Variable,  ~Label,         ~candy,  ~`ice cream`,        ~`P Value`,
+  "happiness", "happy", "185 (76.76%)", "181 (78.7%)", 0.694415226643762,
+  "happiness",   "sad",  "56 (23.24%)",  "49 (21.3%)", 0.694415226643762
 )
 
 simple_tbl <- tibble::tribble(
@@ -36,7 +36,6 @@ simple_tbl <- tibble::tribble(
   "sugar_factor",       "",   "0.49 (0.3)"
 )
 
-
 test_that("descriptives produces correct output", {
 
   treat_out <- example_dat %>%
@@ -44,29 +43,83 @@ test_that("descriptives produces correct output", {
       treatment = "treat",
       variables = c("age", "sugar_factor", "gender", "happiness", "happy")
     )
-  expect_equal(treat_out, treatment_tbl)
+  expect_equal(
+    treat_out %>% select(-`P Value`),
+    treatment_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    treat_out %>% pull(`P Value`),
+    treatment_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
 
   treat_out2 <- example_dat %>%
     dplyr::select(-treat2, -weight, -no_weight) %>%
     descriptives(treatment = "treat")
-  expect_equal(treat_out2, treatment_tbl)
+  expect_equal(
+    treat_out2 %>% select(-`P Value`),
+    treatment_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    treat_out2 %>% pull(`P Value`),
+    treatment_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
 
   cat_out <- example_dat %>%
     descriptives(
       treatment = "treat",
       variables = "happiness"
     )
-  expect_equal(cat_out, cat_tbl)
+  expect_equal(
+    cat_out %>% select(-`P Value`),
+    cat_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    cat_out %>% pull(`P Value`),
+    cat_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
 
   cont_out <- example_dat %>%
     descriptives(
       treatment = "treat",
       variables = c("age", "sugar_factor")
     )
-  expect_equal(cont_out, cont_tbl)
+  expect_equal(
+    treat_out %>% select(-`P Value`),
+    treatment_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    cont_out %>% pull(`P Value`),
+    cont_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
 
   simple_out <- example_dat %>%
     descriptives(variables = c("age", "sugar_factor", "gender", "happiness", "happy"))
   expect_equal(simple_out, simple_tbl)
+
+})
+
+base_t_test <- t.test(
+  age ~ treat,
+  data = example_dat
+)$p.value
+
+base_chi <- chisq.test(
+  example_dat$happiness,
+  example_dat$treat
+)$p.value
+
+test_that("p-values are accurate", {
+
+  anova_output <- example_dat %>%
+    p_anova(var = "age", treatment = "treat")
+  expect_equal(base_t_test, anova_output, tolerance = 0.0001)
+
+  chi_output <- example_dat %>%
+    p_chi_fisher(var = "happiness", treatment = "treat")
+  expect_equal(base_chi, chi_output, tolerance = 0.0001)
 
 })
