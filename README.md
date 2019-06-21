@@ -38,3 +38,34 @@ example_dat %>%
     ## 7 happy        Yes    138 (57.26%)  137 (59.57%)     0.855 
     ## 8 age          ""     42.26 (22.62) 42.39 (21.61)    0.946 
     ## 9 sugar_factor ""     0.46 (0.3)    0.52 (0.29)      0.0129
+
+``` r
+example_dat %>%
+  dplyr::select(treat, age, gender) %>%
+  descriptives(
+    treatment = "treat"
+  )
+```
+
+    ## # A tibble: 3 x 5
+    ##   Variable Label  candy         `ice cream`   `P Value`
+    ##   <chr>    <chr>  <chr>         <chr>             <dbl>
+    ## 1 gender   female 124 (48.25%)  110 (45.27%)      0.563
+    ## 2 gender   male   133 (51.75%)  133 (54.73%)      0.563
+    ## 3 age      ""     42.26 (22.62) 42.39 (21.61)     0.946
+
+``` r
+example_dat %>%
+  dplyr::select(treat, weight, age, gender) %>%
+  descriptives(
+    treatment = "treat",
+    weights = "weight"
+  )
+```
+
+    ## # A tibble: 3 x 5
+    ##   Variable Label  candy         `ice cream`   `P Value`
+    ##   <chr>    <chr>  <chr>         <chr>             <dbl>
+    ## 1 gender   female 48.65%        44.97%            0.475
+    ## 2 gender   male   51.35%        55.03%            0.475
+    ## 3 age      ""     42.17 (22.55) 42.43 (21.93)     0.897
