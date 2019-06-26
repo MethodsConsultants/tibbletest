@@ -42,18 +42,163 @@ example_dat %>%
 
     ## Observations: 495
     ## Variables: 10
-    ## $ gender            <fct> male, female, male, female, male, female, fe...
-    ## $ age               <int> 80, 60, 8, 61, 53, 73, 6, 26, 63, 76, 31, 18...
-    ## $ sugar_factor      <dbl> 0.89372538, 0.83360390, 0.22198429, 0.665734...
-    ## $ treat             <fct> ice cream, candy, candy, candy, candy, ice c...
-    ## $ happiness         <fct> happy, happy, happy, happy, happy, happy, ha...
-    ## $ happy             <fct> Yes, Yes, yes, Yes, Yes, Yes, yes, Yes, Yes,...
-    ## $ weight            <dbl> 1.3788863, 0.9021300, 1.3989398, 1.3817288, ...
-    ## $ no_weight         <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,...
-    ## $ treat2            <chr> "pizza", "pizza", "ice cream", "pizza", "ice...
-    ## $ propensity_weight <dbl> 0.9032606, 0.8181604, 0.8252251, 1.0340621, ...
+    ## $ gender            <fct> male, female, male, female, male, female, fema…
+    ## $ age               <int> 80, 60, 8, 61, 53, 73, 6, 26, 63, 76, 31, 18, …
+    ## $ sugar_factor      <dbl> 0.89372538, 0.83360390, 0.22198429, 0.66573461…
+    ## $ treat             <fct> ice cream, candy, candy, candy, candy, ice cre…
+    ## $ happiness         <fct> happy, happy, happy, happy, happy, happy, happ…
+    ## $ happy             <fct> Yes, Yes, yes, Yes, Yes, Yes, yes, Yes, Yes, Y…
+    ## $ weight            <dbl> 1.3788863, 0.9021300, 1.3989398, 1.3817288, 1.…
+    ## $ no_weight         <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+    ## $ treat2            <chr> "pizza", "pizza", "ice cream", "pizza", "ice c…
+    ## $ propensity_weight <dbl> 0.9003060, 0.8377862, 0.8024989, 0.9502500, 1.…
+
+#### `preprocess`
+
+The `preprocess()` function is used to clean variable names, add
+descriptive variable labels, and convert binary variables to logical
+variables for better presentation in a descriptives table.
+
+``` r
+library(tibbletest)
+
+# defaults
+example_dat %>% 
+  dplyr::rename(`sugar   factor` = sugar_factor) %>% 
+  preprocess()
+```
+
+    ## [Step 1]: Converting binary variables to logical variables
+    ## Variables (happy, no_weight) were converted to logical.
+
+    ## 
+
+    ## [Step 2]: Cleaning variable names
+    ## The following variable names were cleaned with the mapping:
+    ## 
+    ## Original Name    Cleaned Name 
+    ## ---------------  -------------
+    ## sugar   factor   sugar_factor
+
+    ## 
+
+    ## [Step 3]: Adding variable labels
+    ## The following variable labels were specified with the mapping:
+    ## 
+    ## Variable       Label        
+    ## -------------  -------------
+    ## gender         Gender       
+    ## age            Age          
+    ## sugar_factor   Sugar Factor 
+    ## treat          Treat        
+    ## happiness      Happiness    
+    ## happy          Happy        
+    ## weight         Weight       
+    ## no_weight      No Weight    
+    ## treat2         Treat 2
+
+    ## 
+
+    ## # A tibble: 501 x 9
+    ##    gender   age sugar_factor treat  happiness happy weight no_weight treat2
+    ##    <chr>  <int>        <dbl> <chr>  <chr>     <lgl>  <dbl> <lgl>     <chr> 
+    ##  1 male      80       0.894  ice c… happy     TRUE   1.38  TRUE      pizza 
+    ##  2 female    60       0.834  candy  happy     TRUE   0.902 TRUE      pizza 
+    ##  3 male       8       0.222  candy  happy     TRUE   1.40  TRUE      ice c…
+    ##  4 female    61       0.666  candy  happy     TRUE   1.38  TRUE      pizza 
+    ##  5 male      53       0.586  candy  happy     TRUE   1.12  TRUE      ice c…
+    ##  6 female    73       0.793  ice c… happy     TRUE   0.538 TRUE      candy 
+    ##  7 female     6       0.358  candy  happy     TRUE   0.721 TRUE      ice c…
+    ##  8 male      26       0.401  ice c… happy     TRUE   0.912 TRUE      candy 
+    ##  9 male      63       0.206  candy  happy     TRUE   0.998 TRUE      candy 
+    ## 10 male      76       0.0423 candy  happy     TRUE   1.72  TRUE      candy 
+    ## # … with 491 more rows
+
+``` r
+# non-defaults
+mylabels <- list(
+  gender           = "Sex",
+  sugar_factor     = "Sugar Amount",
+  treat2           = "Alternative Treatment"
+)
+
+example_dat %>% 
+  dplyr::rename(`sugar   factor` = sugar_factor) %>% 
+  preprocess(clean_names = TRUE, convert_to_logical = FALSE, var_labels = mylabels)
+```
+
+    ## [Step 1]: Converting binary variables to logical variables
+    ## SKIPPED
+
+    ## 
+
+    ## [Step 2]: Cleaning variable names
+    ## The following variable names were cleaned with the mapping:
+    ## 
+    ## Original Name    Cleaned Name 
+    ## ---------------  -------------
+    ## sugar   factor   sugar_factor
+
+    ## 
+
+    ## [Step 3]: Adding variable labels
+    ## The following variable labels were specified with the mapping:
+    ## 
+    ## Variable       Label                 
+    ## -------------  ----------------------
+    ## gender         Sex                   
+    ## age            Age                   
+    ## sugar_factor   Sugar Amount          
+    ## treat          Treat                 
+    ## happiness      Happiness             
+    ## happy          Happy                 
+    ## weight         Weight                
+    ## no_weight      No Weight             
+    ## treat2         Alternative Treatment
+
+    ## 
+
+    ## # A tibble: 501 x 9
+    ##    gender   age sugar_factor treat  happiness happy weight no_weight treat2
+    ##    <fct>  <int>        <dbl> <fct>  <fct>     <fct>  <dbl>     <dbl> <chr> 
+    ##  1 male      80       0.894  ice c… happy     Yes    1.38          1 pizza 
+    ##  2 female    60       0.834  candy  happy     Yes    0.902         1 pizza 
+    ##  3 male       8       0.222  candy  happy     yes    1.40          1 ice c…
+    ##  4 female    61       0.666  candy  happy     Yes    1.38          1 pizza 
+    ##  5 male      53       0.586  candy  happy     Yes    1.12          1 ice c…
+    ##  6 female    73       0.793  ice c… happy     Yes    0.538         1 candy 
+    ##  7 female     6       0.358  candy  happy     yes    0.721         1 ice c…
+    ##  8 male      26       0.401  ice c… happy     Yes    0.912         1 candy 
+    ##  9 male      63       0.206  candy  happy     Yes    0.998         1 candy 
+    ## 10 male      76       0.0423 candy  happy     Yes    1.72          1 candy 
+    ## # … with 491 more rows
+
+``` r
+# suppress messages
+example_dat %>% 
+  dplyr::rename(`sugar   factor` = sugar_factor) %>% 
+  preprocess(quiet = TRUE)
+```
+
+    ## # A tibble: 501 x 9
+    ##    gender   age sugar_factor treat  happiness happy weight no_weight treat2
+    ##    <chr>  <int>        <dbl> <chr>  <chr>     <lgl>  <dbl> <lgl>     <chr> 
+    ##  1 male      80       0.894  ice c… happy     TRUE   1.38  TRUE      pizza 
+    ##  2 female    60       0.834  candy  happy     TRUE   0.902 TRUE      pizza 
+    ##  3 male       8       0.222  candy  happy     TRUE   1.40  TRUE      ice c…
+    ##  4 female    61       0.666  candy  happy     TRUE   1.38  TRUE      pizza 
+    ##  5 male      53       0.586  candy  happy     TRUE   1.12  TRUE      ice c…
+    ##  6 female    73       0.793  ice c… happy     TRUE   0.538 TRUE      candy 
+    ##  7 female     6       0.358  candy  happy     TRUE   0.721 TRUE      ice c…
+    ##  8 male      26       0.401  ice c… happy     TRUE   0.912 TRUE      candy 
+    ##  9 male      63       0.206  candy  happy     TRUE   0.998 TRUE      candy 
+    ## 10 male      76       0.0423 candy  happy     TRUE   1.72  TRUE      candy 
+    ## # … with 491 more rows
 
 #### `descriptives`
+
+The `descriptives()` function is used to quickly create descriptives
+tables for reports or presentations.
 
 ``` r
 example_dat %>% 
@@ -93,21 +238,18 @@ example_dat %>%
 
 ``` r
 example_dat %>%
-  dplyr::select(treat, weight, age, gender) %>%
+  dplyr::select(treat, weight, age, gender, sugar_factor) %>%
+  add_propensity_weights(
+    treatment = "treat",
+    ivs = c("age", "sugar_factor", "gender")
+  ) %>% 
   descriptives(
     treatment = "treat",
     weights = "weight"
   )
 ```
 
-    ## Weights were normalized to a mean of 1 to preserve sample size in significance tests
-
-    ## # A tibble: 3 x 5
-    ##   Variable Label  candy         `ice cream`   `P Value`
-    ##   <chr>    <chr>  <chr>         <chr>             <dbl>
-    ## 1 gender   female 48.65%        44.97%            0.475
-    ## 2 gender   male   51.35%        55.03%            0.475
-    ## 3 age      ""     42.17 (22.55) 42.43 (21.93)     0.897
+    ## Error: df[[treatment]] contains 1 missing values
 
 ``` r
 example_dat %>% 
