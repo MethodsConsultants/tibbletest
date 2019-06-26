@@ -17,14 +17,46 @@ devtools::install_github("MethodsConsultants/tibbletest")
 
 ## Usage
 
+#### `preprocess`
+
+The `preprocess()` function is used to clean variable names, add descriptive variable labels, and convert binary variables to logical variables for better presentation in a descriptives table.
+
 ```{r}
 
 library(tibbletest)
+
+# defaults
+example_dat %>% 
+  dplyr::rename(`sugar   factor` = sugar_factor) %>% 
+  preprocess()
+
+# non-defaults
+mylabels <- list(
+  gender           = "Sex",
+  sugar_factor     = "Sugar Amount",
+  treat2           = "Alternative Treatment"
+)
+
+example_dat %>% 
+  dplyr::rename(`sugar   factor` = sugar_factor) %>% 
+  preprocess(clean_names = TRUE, convert_to_logical = FALSE, var_labels = mylabels)
+
+# suppress messages
+example_dat %>% 
+  dplyr::rename(`sugar   factor` = sugar_factor) %>% 
+  preprocess(quiet = TRUE)
+```
+
+
+#### `descriptives`
+
+The `descriptives()` function is used to quickly create descriptives tables for reports or presentations.
+
+```{r}
 
 example_dat %>% 
   descriptives(
     treatment = "treat", 
     variables = c("age", "sugar_factor", "gender", "happiness", "happy")
   )
-
 ```

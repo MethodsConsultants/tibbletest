@@ -17,10 +17,15 @@ Imports:
     magrittr,
     tibble,
     dplyr,
-    rlang, 
+    rlang,
     purrr,
     stringr,
-    tidyr
+    tidyr,
+    sjlabelled,
+    janitor,
+    snakecase,
+    crayon,
+    knitr
 Suggests: 
     testthat (>= 2.1.0),
     covr
