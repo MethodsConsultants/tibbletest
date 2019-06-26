@@ -104,22 +104,20 @@ example_dat %>%
 
     ## 
 
-    ## Argument `label` must be of same length as numbers of columns in `x`.
-
     ## [Step 3]: Adding variable labels
     ## The following variable labels were specified with the mapping:
     ## 
-    ## Variable       Label 
-    ## -------------  ------
-    ## gender               
-    ## age                  
-    ## sugar_factor         
-    ## treat                
-    ## happiness            
-    ## happy                
-    ## weight               
-    ## no_weight            
-    ## treat2
+    ## Variable       Label                 
+    ## -------------  ----------------------
+    ## gender         Sex                   
+    ## age            Age                   
+    ## sugar_factor   Sugar Amount          
+    ## treat          Treat                 
+    ## happiness      Happiness             
+    ## happy          Happy                 
+    ## weight         Weight                
+    ## no_weight      No Weight             
+    ## treat2         Alternative Treatment
 
     ## 
 
