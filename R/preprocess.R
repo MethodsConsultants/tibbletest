@@ -83,6 +83,12 @@ preprocess <- function(df, var_labels = NULL, clean_names = TRUE, convert_to_log
       df <- sjlabelled::set_label(df, snakecase::to_title_case(colnames(df)))
     }
   } else {
+    if (clean_names == TRUE) {
+      names(var_labels) <- var_labels %>%
+        names() %>%
+        janitor::make_clean_names()
+    }
+
     default_labels <- as.list(setNames(snakecase::to_title_case(colnames(df)), as.list(colnames(df))))
 
     labels <- default_labels %>%
