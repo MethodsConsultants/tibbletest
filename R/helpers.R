@@ -10,6 +10,10 @@
 #' @noRd
 p_chi_fisher <- function(df, var, treatment, weight_var) {
 
+  df <- df %>%
+    drop_na(!!var, !!treatment) %>%
+    mutate_at(vars(weight_var), ~ .x / mean(.x))
+
   paste0(var, "~", treatment, "+", weight_var) %>%
     as.formula() %>%
     sjstats:::wtd_chisqtest.formula(data = df) %>%
