@@ -27,4 +27,17 @@ example_dat %>%
     variables = c("age", "sugar_factor", "gender", "happiness", "happy")
   )
 
+example_dat %>%
+  dplyr::select(treat, age, gender) %>%
+  descriptives(
+    treatment = "treat"
+  )
+
+example_dat %>%
+  dplyr::select(treat, weight, age, gender) %>%
+  descriptives(
+    treatment = "treat",
+    weights = "weight"
+  )
+
 ```

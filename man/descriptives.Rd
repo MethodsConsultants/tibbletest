@@ -4,7 +4,7 @@
 \alias{descriptives}
 \title{Creates a table of summary statistics}
 \usage{
-descriptives(df, treatment = NULL, variables = NULL)
+descriptives(df, treatment = NULL, variables = NULL, weights = NULL)
 }
 \arguments{
 \item{df}{<\code{tbl_df}> Data frame with treatment and variables of interest as columns.}
@@ -12,6 +12,8 @@ descriptives(df, treatment = NULL, variables = NULL)
 \item{treatment}{<\code{character(1)}> String with name of treatment column. If left blank, will produce univariate summary statistics.}
 
 \item{variables}{<\code{character}> Character vector of column names. If left blank, will be inferred from data.}
+
+\item{weights}{<\code{character(1)}> String with name of column with observation weights. If left blank, will not use observation weights.}
 }
 \value{
 <\code{tbl_df}> Tibble with summary statistics split by treatment (optional).

@@ -20,7 +20,9 @@ Imports:
     rlang, 
     purrr,
     stringr,
-    tidyr
+    tidyr,
+    sjstats,
+    assertthat
 Suggests: 
     testthat (>= 2.1.0),
     covr
