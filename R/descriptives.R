@@ -70,6 +70,18 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL)
     return(cat_tbl)
   }
 
+  if (!is.null(weights) & !is.null(treatment)) {
+
+    weight_mean <- df %>%
+      drop_na(!!treatment) %>%
+      pull(!!weights) %>%
+      mean()
+
+    if (weight_mean != 1) {
+      message("Weights were normalized to a mean of 1 to preserve sample size in significance tests")
+    }
+  }
+
   cont_tbl <- mean_sd_func(df, cont_vars, treatment, weights)
   cat_tbl <- cat_func(df, cat_vars, treatment, weights)
 
