@@ -22,7 +22,8 @@ Imports:
     stringr,
     tidyr,
     sjstats,
-    assertthat
+    assertthat,
+    survey
 Suggests: 
     testthat (>= 2.1.0),
     covr

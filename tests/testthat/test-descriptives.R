@@ -187,3 +187,91 @@ test_that("descriptives produces correct weighted tables", {
   )
 
 })
+
+nonparametric_tbl <- tibble::tribble(
+       ~Variable, ~Label,              ~candy,        ~`ice cream`,         ~`P Value`,
+         "happy",   "no",       "56 (23.24%)",        "49 (21.3%)",  0.855356296516553,
+         "happy",  "yes",        "47 (19.5%)",       "44 (19.13%)",  0.855356296516553,
+         "happy",  "Yes",      "138 (57.26%)",      "137 (59.57%)",  0.855356296516553,
+           "age",     "",     "42.26 (22.62)",     "42.39 (21.61)",  0.946208619349777,
+  "sugar_factor",     "", "0.44 [0.18, 0.72]", "0.52 [0.28, 0.76]", 0.0116654898090404
+)
+
+nonparametric_weight_tbl <- tibble::tribble(
+       ~Variable,              ~candy,       ~`ice cream`,          ~`P Value`,
+           "age",       "42 [22, 62]",      "41 [26, 61]",    0.84408577110025,
+  "sugar_factor", "0.44 [0.18, 0.72]", "0.51 [0.3, 0.76]", 0.00831771381361891
+)
+
+test_that("descriptives produces correct non-parametric tables", {
+
+  nonparametric_out <- example_dat %>%
+    select(treat, happy, age, sugar_factor) %>%
+    descriptives(
+      treatment = "treat",
+      nonparametric = "sugar_factor"
+    )
+
+  nonparametric_out2 <- example_dat %>%
+    descriptives(
+      treatment = "treat",
+      variables = c("happy", "age", "sugar_factor"),
+      nonparametric = "sugar_factor"
+    )
+
+  nonparametric_out3 <- example_dat %>%
+    descriptives(
+      treatment = "treat",
+      variables = c("happy", "age"),
+      nonparametric = "sugar_factor"
+    )
+
+  expect_equal(
+    nonparametric_out %>% select(-`P Value`),
+    nonparametric_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    nonparametric_out %>% pull(`P Value`),
+    nonparametric_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+
+  expect_equal(
+    nonparametric_out2 %>% select(-`P Value`),
+    nonparametric_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    nonparametric_out2 %>% pull(`P Value`),
+    nonparametric_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+
+  expect_equal(
+    nonparametric_out3 %>% select(-`P Value`),
+    nonparametric_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    nonparametric_out3 %>% pull(`P Value`),
+    nonparametric_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+
+  nonparametric_weight_out <- example_dat %>%
+    descriptives(
+      treatment = "treat",
+      variables = c("age", "sugar_factor"),
+      nonparametric = c("age", "sugar_factor"),
+      weights = "weight"
+    )
+
+  expect_equal(
+    nonparametric_weight_out %>% select(-`P Value`),
+    nonparametric_weight_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    nonparametric_weight_out %>% pull(`P Value`),
+    nonparametric_weight_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+
+})
