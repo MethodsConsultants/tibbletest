@@ -69,12 +69,12 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
   }
 
   if (length(cat_vars) == 0) {
-    cont_tbl <- cont_func(df, cont_vars, treatment, weights, nonparametric)
+    cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric)
     return(cont_tbl)
   }
 
   if (length(c(cont_vars, nonparametric)) == 0) {
-    cat_tbl <- cat_func(df, cat_vars, treatment, weights)
+    cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights)
     return(cat_tbl)
   }
 
@@ -90,8 +90,8 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     }
   }
 
-  cont_tbl <- cont_func(df, cont_vars, treatment, weights, nonparametric)
-  cat_tbl <- cat_func(df, cat_vars, treatment, weights)
+  cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric)
+  cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights)
 
   bind_rows(cat_tbl, cont_tbl) %>%
     tidyr::replace_na(list(Label = ""))
@@ -112,7 +112,7 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 #' @import tidyr
 #'
 #' @noRd
-cat_func <- function(df, cat_vars, treatment, weights) {
+cat_descriptives <- function(df, cat_vars, treatment, weights) {
 
   cat_vars <- syms(cat_vars)
 
@@ -201,7 +201,7 @@ cat_func <- function(df, cat_vars, treatment, weights) {
 #' @import tidyr
 #'
 #' @noRd
-cont_func <- function(df, cont_vars, treatment, weights, nonparametric) {
+cont_descriptives <- function(df, cont_vars, treatment, weights, nonparametric) {
 
   if (!is.null(treatment)) {
 
@@ -226,7 +226,7 @@ cont_func <- function(df, cont_vars, treatment, weights, nonparametric) {
 
   if (is.null(nonparametric)) {
 
-    parametric_tbl <- mean_sd_func(df, cont_vars, treatment)
+    parametric_tbl <- mean_sd_descriptives(df, cont_vars, treatment)
     return(parametric_tbl)
 
   }
@@ -235,13 +235,13 @@ cont_func <- function(df, cont_vars, treatment, weights, nonparametric) {
 
   if (length(cont_vars) == 0) {
 
-    nonparametric_tbl <- median_IQR_func(df, nonparametric, treatment)
+    nonparametric_tbl <- median_IQR_descriptives(df, nonparametric, treatment)
     return(nonparametric_tbl)
 
   }
 
-  parametric_tbl <- mean_sd_func(df, cont_vars, treatment)
-  nonparametric_tbl <- median_IQR_func(df, nonparametric, treatment)
+  parametric_tbl <- mean_sd_descriptives(df, cont_vars, treatment)
+  nonparametric_tbl <- median_IQR_descriptives(df, nonparametric, treatment)
 
   bind_rows(parametric_tbl, nonparametric_tbl)
 
@@ -249,14 +249,14 @@ cont_func <- function(df, cont_vars, treatment, weights, nonparametric) {
 
 #' Creates summary table for continuous variables with mean/sd/anova.
 #'
-#' @inheritParams cont_func
+#' @inheritParams cont_descriptives
 #'
 #' @import dplyr
 #' @import tidyr
 #' @import purrr
 #'
 #' @noRd
-mean_sd_func <- function(df, cont_vars, treatment) {
+mean_sd_descriptives <- function(df, cont_vars, treatment) {
 
   ## Set names to force consistent syntax in summarise_at
   var_named <- cont_vars %>%
@@ -314,14 +314,14 @@ mean_sd_func <- function(df, cont_vars, treatment) {
 
 #' Creates summary table for continuous variables with median/IQR/Kruskal-Wallis.
 #'
-#' @inheritParams cont_func
+#' @inheritParams cont_descriptives
 #'
 #' @import dplyr
 #' @import tidyr
 #' @import purrr
 #'
 #' @noRd
-median_IQR_func <- function(df, cont_vars, treatment) {
+median_IQR_descriptives <- function(df, cont_vars, treatment) {
 
   ## Set names to force consistent syntax in summarise_at
   var_named <- cont_vars %>%
