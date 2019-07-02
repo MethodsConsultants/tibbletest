@@ -48,6 +48,36 @@ p_anova <- function(df, var, treatment, weight_var) {
 
 }
 
+#' Helper function which calculates p-value via Kruskal-Wallis
+#'
+#' @inheritParams p_chi_fisher
+#'
+#' @return <`numeric(1)`> p-value
+#'
+#' @import survey
+#'
+#' @noRd
+p_kruskal <- function(df, var, treatment, weight_var) {
+
+  if (all(df[[weight_var]] == 1)) {
+
+    p <- kruskal.test(df[[var]], df[[treatment]]) %>%
+      purrr::pluck("p.value")
+    return(p)
+
+  }
+
+  survey_obj <- svydesign(~1, data = df, weights = df[[weight_var]])
+
+  var %>%
+    paste0(" ~ ", treatment) %>%
+    stats::as.formula() %>%
+    svyranktest(design = survey_obj) %>%
+    purrr::pluck("p.value") %>%
+    as.numeric()
+
+}
+
 #' Helper function which returns whether or not the column is numeric
 #'
 #' @inheritParams summary_cat
@@ -211,3 +241,40 @@ weighted_sd <- function(vec, weight_vec = rep(1, length(vec))) {
     sqrt()
 
 }
+
+#' Helper function which calculates a quantile of a vector with observation weights. Taken from `sjstats:::wtd_md_helper`
+#'
+#' @param x <`numeric`> Continuous vector of which we want to calculate a quantile
+#' @param weights <`numeric`> Nonnegative vector of observation weights
+#' @param p <`numeric(1)`> Quantile to compute (0.5 is median)
+#'
+#' @return <`numeric(1)`>
+#'
+#' @keywords internal
+#' @noRd
+weighted_quantile <- function(x, weights, p) {
+
+  x[is.na(weights)] <- NA
+  weights[is.na(x)] <- NA
+
+  weights <- na.omit(weights)
+  x <- na.omit(x)
+
+  order <- order(x)
+  x <- x[order]
+  weights <- weights[order]
+
+  rw <- cumsum(weights) / sum(weights)
+  md.values <- min(which(rw >= p))
+
+  if (rw[md.values] == p) {
+    q <- mean(x[md.values:(md.values + 1)])
+  } else {
+    q <- x[md.values]
+  }
+
+  q
+
+}
+
+

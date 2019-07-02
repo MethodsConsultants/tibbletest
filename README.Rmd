@@ -40,4 +40,11 @@ example_dat %>%
     weights = "weight"
   )
 
+example_dat %>% 
+  descriptives(
+    treatment = "treat", 
+    variables = c("age", "sugar_factor", "gender", "happiness", "happy"),
+    nonparametric = c("age")
+  )
+
 ```
