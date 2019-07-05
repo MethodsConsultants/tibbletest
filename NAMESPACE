@@ -2,6 +2,7 @@
 
 export("%>%")
 export(descriptives)
+export(propensity_weighting)
 import(assertthat)
 import(dplyr)
 import(purrr)

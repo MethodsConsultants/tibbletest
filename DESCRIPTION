@@ -23,7 +23,8 @@ Imports:
     tidyr,
     sjstats,
     assertthat,
-    survey
+    survey,
+    ranger
 Suggests: 
     testthat (>= 2.1.0),
     covr
