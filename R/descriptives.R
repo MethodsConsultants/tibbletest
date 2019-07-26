@@ -32,7 +32,7 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
   if (!is.null(weights)) {
     assert_that(is.string(weights))
     assert_that(is.numeric(df[[weights]]))
-    assert_that(all(!is.na(df[[weights]])))
+    assert_that(noNA(df[[weights]]))
     assert_that(all(df[[weights]] > 0))
   }
 
