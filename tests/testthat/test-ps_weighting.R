@@ -62,7 +62,7 @@ test_that("Imputation works as expected", {
 
 })
 
-test_that("Imputation works when 1 IV", {
+test_that("Imputation works when 1 continuous IV", {
 
   iv_age <- subset_dat_2 %>%
     add_propensity_weights(
@@ -79,6 +79,11 @@ test_that("Imputation works when 1 IV", {
   expect_equal(ncol(iv_age), (ncol(subset_dat_2) + 1))
   expect_true("propensity_weight" %in% colnames(iv_age))
   expect_equal(mean(iv_age$propensity_weight), 1)
+
+})
+
+
+test_that("Imputation works when 1 categorical IV", {
 
   iv_happiness <- subset_dat_2 %>%
     add_propensity_weights(
