@@ -61,3 +61,39 @@ test_that("Imputation works as expected", {
   expect_equal(mean(output_2$propensity_weight), 1)
 
 })
+
+test_that("Imputation works when 1 IV", {
+
+  iv_age <- subset_dat_2 %>%
+    add_propensity_weights(
+      treatment = "treat",
+      ivs = "age",
+      impute_missing = TRUE
+    )
+
+  expect_equal(
+    iv_age %>% dplyr::select(-propensity_weight),
+    subset_dat_2
+  )
+
+  expect_equal(ncol(iv_age), (ncol(subset_dat_2) + 1))
+  expect_true("propensity_weight" %in% colnames(iv_age))
+  expect_equal(mean(iv_age$propensity_weight), 1)
+
+  iv_happiness <- subset_dat_2 %>%
+    add_propensity_weights(
+      treatment = "treat",
+      ivs = "happiness",
+      impute_missing = TRUE
+    )
+
+  expect_equal(
+    iv_happiness %>% dplyr::select(-propensity_weight),
+    subset_dat_2
+  )
+
+  expect_equal(ncol(iv_happiness), (ncol(subset_dat_2) + 1))
+  expect_true("propensity_weight" %in% colnames(iv_happiness))
+  expect_equal(mean(iv_happiness$propensity_weight), 1)
+
+})
