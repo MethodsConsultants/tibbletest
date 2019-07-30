@@ -3,6 +3,7 @@
 export("%>%")
 export(add_propensity_weights)
 export(descriptives)
+export(format_tbl)
 import(assertthat)
 import(dplyr)
 import(purrr)
