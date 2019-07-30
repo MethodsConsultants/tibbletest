@@ -16,9 +16,46 @@ devtools::install_github("MethodsConsultants/tibbletest")
 
 ## Usage
 
+#### `propensity_weighting`
+
 ``` r
 library(tibbletest)
 
+example_dat %>%
+  propensity_weighting(
+    treatment = "treat",
+    ivs = c("age", "sugar_factor", "gender")
+  )
+```
+
+    ## Error: Missing data in columns: treat, age.
+
+``` r
+example_dat %>%
+  tidyr::drop_na(treat, age) %>%
+  propensity_weighting(
+    treatment = "treat",
+    ivs = c("age", "sugar_factor", "gender")
+  ) %>%
+  dplyr::glimpse()
+```
+
+    ## Observations: 495
+    ## Variables: 10
+    ## $ gender            <fct> male, female, male, female, male, female, fe...
+    ## $ age               <int> 80, 60, 8, 61, 53, 73, 6, 26, 63, 76, 31, 18...
+    ## $ sugar_factor      <dbl> 0.89372538, 0.83360390, 0.22198429, 0.665734...
+    ## $ treat             <fct> ice cream, candy, candy, candy, candy, ice c...
+    ## $ happiness         <fct> happy, happy, happy, happy, happy, happy, ha...
+    ## $ happy             <fct> Yes, Yes, yes, Yes, Yes, Yes, yes, Yes, Yes,...
+    ## $ weight            <dbl> 1.3788863, 0.9021300, 1.3989398, 1.3817288, ...
+    ## $ no_weight         <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,...
+    ## $ treat2            <chr> "pizza", "pizza", "ice cream", "pizza", "ice...
+    ## $ propensity_weight <dbl> 0.9031292, 0.8378130, 0.7850851, 0.9913243, ...
+
+#### `descriptives`
+
+``` r
 example_dat %>% 
   descriptives(
     treatment = "treat", 
