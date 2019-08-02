@@ -68,14 +68,33 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     stop("No valid variable types")
   }
 
+  if (!is.null(treatment)) {
+
+    treat_quo <- sym(treatment)
+
+    treatment_count_attr <- df %>%
+      tidyr::drop_na(!!treat_quo) %>%
+      count(!!treat_quo) %>%
+      rename(treatment_label = !!quo_name(treat_quo))
+
+  } else {
+    treatment_count_attr <- NULL
+  }
+
   if (length(cat_vars) == 0) {
+
     cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric)
+    attr(cont_tbl, "treatment_n") <- treatment_count_attr
     return(cont_tbl)
+
   }
 
   if (length(c(cont_vars, nonparametric)) == 0) {
+
     cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights)
+    attr(cat_tbl, "treatment_n") <- treatment_count_attr
     return(cat_tbl)
+
   }
 
   if (!is.null(weights) & !is.null(treatment)) {
@@ -88,13 +107,16 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     if (weight_mean != 1) {
       message("Weights were normalized to a mean of 1 to preserve sample size in significance tests")
     }
+
   }
 
   cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric)
   cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights)
 
-  bind_rows(cat_tbl, cont_tbl) %>%
+  tbl <- bind_rows(cat_tbl, cont_tbl) %>%
     tidyr::replace_na(list(Label = ""))
+  attr(tbl, "treatment_n") <- treatment_count_attr
+  tbl
 
 }
 
@@ -134,7 +156,6 @@ cat_descriptives <- function(df, cat_vars, treatment, weights) {
     weighted <- TRUE
 
   }
-
 
   if (is.null(treatment)) {
 

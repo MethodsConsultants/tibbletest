@@ -4,10 +4,18 @@
 \alias{format_tbl}
 \title{Formats the descriptives table outputted by \code{descriptives}}
 \usage{
-format_tbl(obj, p_val_digits = 3L)
+format_tbl(obj, add_Ns = TRUE, remove_duplicates = TRUE,
+  remove_false = TRUE, p_val_digits = 3L)
 }
 \arguments{
-\item{obj}{<\code{tbl_df}> Dataframe outputted by \code{descriptives}}
+\item{obj}{<\code{tbl_df}> Tibble outputted by \code{descriptives}}
+
+\item{add_Ns}{<\code{logical(1)}> Should treatment counts be added to column names?}
+
+\item{remove_duplicates}{<\code{logical(1)}> Should repeated variable names and p-values for categorical variables be removed?
+If TRUE, variable names and p-values will be presented only once on their own row.}
+
+\item{remove_false}{<\code{logical(1)}> Should binary variables only show the N and percent of TRUE?}
 
 \item{p_val_digits}{<\code{integer(1)}> Number of digits to round p-values}
 }
@@ -15,5 +23,6 @@ format_tbl(obj, p_val_digits = 3L)
 <\code{tbl_df}> Formatted tibble
 }
 \description{
-For categorical variables with multiple labels, variable name and p-value are moved to their own row and are not repeated. Additionally, p-values are rounded.
+Allows for easy formatting of summary statistics table. Treatment group counts are added to the column names,
+duplicated categorical variable names and p-values are removed, and p-values are rounded.
 }
