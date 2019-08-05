@@ -78,7 +78,6 @@ example_dat %>%
 
 univariate <- example_dat %>% 
   descriptives(
-    treatment = "treat", 
     variables = c("age", "sugar_factor", "gender", "happiness", "happy")
   )
 
@@ -89,6 +88,7 @@ univariate %>%
 
 bivariate <- example_dat %>% 
   descriptives(
+    treatment = "treat",
     variables = c("age", "sugar_factor", "gender", "happiness", "happy")
   )
 
