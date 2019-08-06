@@ -14,7 +14,6 @@ Install the development version from [GitHub](https://github.com/) with:
 devtools::install_github("MethodsConsultants/tibbletest")
 ```
 
-
 ## Usage
 
 #### `propensity_weighting`
@@ -24,14 +23,14 @@ devtools::install_github("MethodsConsultants/tibbletest")
 library(tibbletest)
 
 example_dat %>%
-  propensity_weighting(
+  add_propensity_weights(
     treatment = "treat",
     ivs = c("age", "sugar_factor", "gender")
   )
 
 example_dat %>%
   tidyr::drop_na(treat, age) %>%
-  propensity_weighting(
+  add_propensity_weights(
     treatment = "treat",
     ivs = c("age", "sugar_factor", "gender")
   ) %>%
@@ -71,3 +70,31 @@ example_dat %>%
   )
 
 ```
+
+#### `format_tbl`
+
+```{r}
+
+univariate <- example_dat %>% 
+  descriptives(
+    variables = c("age", "sugar_factor", "gender", "happiness", "happy")
+  )
+
+univariate
+
+univariate %>%
+  format_tbl()
+
+bivariate <- example_dat %>% 
+  descriptives(
+    treatment = "treat",
+    variables = c("age", "sugar_factor", "gender", "happiness", "happy")
+  )
+
+bivariate
+
+bivariate %>%
+  format_tbl()
+
+```
+
