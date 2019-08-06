@@ -72,19 +72,19 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 
     treat_quo <- sym(treatment)
 
-    treatment_count_attr <- df %>%
+    count_attr <- df %>%
       tidyr::drop_na(!!treat_quo) %>%
       count(!!treat_quo) %>%
-      rename(treatment_label = !!quo_name(treat_quo))
+      rename(label = !!quo_name(treat_quo))
 
   } else {
-    treatment_count_attr <- NULL
+    count_attr <- tibble(label = "Statistics", n = nrow(df))
   }
 
   if (length(cat_vars) == 0) {
 
     cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric)
-    attr(cont_tbl, "treatment_n") <- treatment_count_attr
+    attr(cont_tbl, "counts") <- count_attr
     return(cont_tbl)
 
   }
@@ -92,7 +92,7 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
   if (length(c(cont_vars, nonparametric)) == 0) {
 
     cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights)
-    attr(cat_tbl, "treatment_n") <- treatment_count_attr
+    attr(cat_tbl, "counts") <- count_attr
     return(cat_tbl)
 
   }
@@ -115,7 +115,7 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 
   tbl <- bind_rows(cat_tbl, cont_tbl) %>%
     tidyr::replace_na(list(Label = ""))
-  attr(tbl, "treatment_n") <- treatment_count_attr
+  attr(tbl, "counts") <- count_attr
   tbl
 
 }

@@ -127,12 +127,12 @@ univariate_obj <- example_dat %>%
   )
 
 univariate_truth <- tibble::tribble(
-     ~Variable,   ~Label,    ~Statistics,
-         "age",       "",  "42.3 (22.1)",
-      "gender",       "",             "",
-            "", "female", "235 (46.91%)",
-            "",   "male", "266 (53.09%)",
-  "happy_true",       "", "367 (77.75%)"
+     ~Variable,   ~Label,    ~`Statistics (N=501)`,
+         "age",       "",            "42.3 (22.1)",
+      "gender",       "",                       "",
+            "", "female",           "235 (46.91%)",
+            "",   "male",           "266 (53.09%)",
+  "happy_true",       "",           "367 (77.75%)"
 )
 
 test_that("works in univariate case", {

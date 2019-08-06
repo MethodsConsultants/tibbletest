@@ -20,7 +20,7 @@ format_tbl <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE, remove_fals
 
   assert_that(p_val_digits >= 2)
 
-  obj_attr <- attr(obj, "treatment_n")
+  obj_attr <- attr(obj, "counts")
 
   if ("P Value" %in% colnames(obj)) {
 
@@ -35,10 +35,14 @@ format_tbl <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE, remove_fals
   }
 
   split_by_var <- obj %>%
+    mutate(Variable = factor(Variable, levels = unique(Variable))) %>%
     group_by(Variable) %>%
     group_split()
 
   format_one_variable <- function(tbl) {
+
+    tbl <- tbl %>%
+      mutate(Variable = as.character(Variable))
 
     if (all(tbl$Label %in% c("TRUE", "FALSE")) & remove_false) {
 
@@ -94,12 +98,12 @@ format_tbl <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE, remove_fals
 
     name_df <- obj_attr %>%
       mutate(
-        new = paste0(treatment_label, " (N=", n, ")")
+        new = paste0(label, " (N=", n, ")")
       )
 
     named_vector <- set_names(
       x = name_df$new,
-      nm = name_df$treatment_label
+      nm = name_df$label
     )
 
     output <- output %>%
