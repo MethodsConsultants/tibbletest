@@ -32,7 +32,7 @@ proportions <- function(count_vec, weighted) {
     TRUE ~ probs
   )
 
-  int_vec <- case_when(
+  count_vec <- case_when(
     is.na(count_vec) ~ 0,
     TRUE ~ count_vec
   )
