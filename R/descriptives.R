@@ -195,6 +195,7 @@ cat_descriptives <- function(df, cat_vars, treatment, weights) {
       summarise(weighted_count = sum(obs_weights)) %>%
       ungroup() %>%
       drop_na() %>%
+      tidyr::complete(!!treatment, tidyr::nesting(Variable, Label)) %>%
       group_by(!!treatment, Variable) %>%
       mutate(Statistics = proportions(weighted_count, weighted = weighted)) %>%
       ungroup() %>%

@@ -8,6 +8,7 @@
 #' @return <`tbl`> Data frame with new column for propensity weights
 #'
 #' @import purrr
+#' @import dplyr
 #' @importFrom rlang := !! sym
 #'
 #' @export
@@ -87,9 +88,13 @@ add_propensity_weights <- function(df, treatment, ivs, impute_missing = FALSE) {
     map2_dbl(df[[treatment]], ~ pluck(.x, .y))
 
   df %>%
-    dplyr::mutate(
-      propensity_weight = 1 / propensity_score,
+    mutate(
+      propensity_weight = 1 / propensity_score
+    ) %>%
+    group_by(!!sym(treatment)) %>%
+    mutate(
       propensity_weight = propensity_weight / mean(propensity_weight)
-    )
+    ) %>%
+    ungroup()
 
 }
