@@ -2,13 +2,13 @@ treatment_tbl <- tibble::tribble(
        ~Variable,   ~Label,          ~candy,    ~`ice cream`,         ~`P Value`,
         "gender", "female",  "124 (48.25%)",  "110 (45.27%)",   0.56317088298012,
         "gender",   "male",  "133 (51.75%)",  "133 (54.73%)",   0.56317088298012,
+           "age",       "", "42.26 (22.62)", "42.39 (21.61)",  0.946208619349777,
+  "sugar_factor",       "",    "0.46 (0.3)",   "0.52 (0.29)", 0.0128504785023786,
      "happiness",  "happy",  "185 (76.76%)",   "181 (78.7%)",  0.694415226643762,
      "happiness",    "sad",   "56 (23.24%)",    "49 (21.3%)",  0.694415226643762,
          "happy",     "no",   "56 (23.24%)",    "49 (21.3%)",  0.855356296516553,
          "happy",    "yes",    "47 (19.5%)",   "44 (19.13%)",  0.855356296516553,
-         "happy",    "Yes",  "138 (57.26%)",  "137 (59.57%)",  0.855356296516553,
-           "age",       "", "42.26 (22.62)", "42.39 (21.61)",  0.946208619349777,
-  "sugar_factor",       "",    "0.46 (0.3)",   "0.52 (0.29)", 0.0128504785023786
+         "happy",    "Yes",  "138 (57.26%)",  "137 (59.57%)",  0.855356296516553
 )
 
 cont_tbl <- tibble::tribble(
@@ -41,7 +41,7 @@ test_that("descriptives produces correct output", {
   treat_out <- example_dat %>%
     descriptives(
       treatment = "treat",
-      variables = c("age", "sugar_factor", "gender", "happiness", "happy")
+      variables = c("gender", "age", "sugar_factor", "happiness", "happy")
     )
   expect_equal(
     treat_out %>% select(-`P Value`),
@@ -128,26 +128,26 @@ no_weight_treatment_tbl <- tibble::tribble(
        ~Variable,   ~Label,          ~candy,    ~`ice cream`,         ~`P Value`,
         "gender", "female",        "48.25%",        "45.27%",   0.56317088298012,
         "gender",   "male",        "51.75%",        "54.73%",   0.56317088298012,
+           "age",       "", "42.26 (22.62)", "42.39 (21.61)",  0.946208619349777,
+  "sugar_factor",       "",    "0.46 (0.3)",   "0.52 (0.29)", 0.0128504785023786,
      "happiness",  "happy",        "76.76%",         "78.7%",  0.694415226643762,
      "happiness",    "sad",        "23.24%",         "21.3%",  0.694415226643762,
          "happy",     "no",        "23.24%",         "21.3%",  0.855356296516553,
          "happy",    "yes",         "19.5%",        "19.13%",  0.855356296516553,
-         "happy",    "Yes",        "57.26%",        "59.57%",  0.855356296516553,
-           "age",       "", "42.26 (22.62)", "42.39 (21.61)",  0.946208619349777,
-  "sugar_factor",       "",    "0.46 (0.3)",   "0.52 (0.29)", 0.0128504785023786
+         "happy",    "Yes",        "57.26%",        "59.57%",  0.855356296516553
 )
 
 weight_treatment_tbl <- tibble::tribble(
        ~Variable,   ~Label,          ~candy,    ~`ice cream`,          ~`P Value`,
         "gender", "female",        "48.65%",        "44.97%",   0.430901201183401,
         "gender",   "male",        "51.35%",        "55.03%",   0.430901201183401,
+           "age",       "", "42.17 (22.55)", "42.43 (21.93)",   0.901907124081075,
+  "sugar_factor",       "",    "0.45 (0.3)",   "0.52 (0.28)", 0.00920038384810278,
      "happiness",  "happy",         "77.1%",        "77.38%",    0.94558985790769,
      "happiness",    "sad",         "22.9%",        "22.62%",    0.94558985790769,
          "happy",     "no",         "22.9%",        "22.62%",   0.988678719678186,
          "happy",    "yes",        "19.22%",         "18.8%",   0.988678719678186,
          "happy",    "Yes",        "57.89%",        "58.58%",   0.988678719678186,
-           "age",       "", "42.17 (22.55)", "42.43 (21.93)",   0.901907124081075,
-  "sugar_factor",       "",    "0.45 (0.3)",   "0.52 (0.28)", 0.00920038384810278
 )
 
 test_that("descriptives produces correct weighted tables", {
@@ -155,7 +155,7 @@ test_that("descriptives produces correct weighted tables", {
   no_weight_treat_out <- example_dat %>%
     descriptives(
       treatment = "treat",
-      variables = c("age", "sugar_factor", "gender", "happiness", "happy"),
+      variables = c("gender", "age", "sugar_factor", "happiness", "happy"),
       weights = "no_weight"
     )
 
@@ -172,7 +172,7 @@ test_that("descriptives produces correct weighted tables", {
   weight_treat_out <- example_dat %>%
     descriptives(
       treatment = "treat",
-      variables = c("age", "sugar_factor", "gender", "happiness", "happy"),
+      variables = c("gender", "age", "sugar_factor", "happiness", "happy"),
       weights = "weight"
     )
 

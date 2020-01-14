@@ -115,6 +115,19 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 
   tbl <- bind_rows(cat_tbl, cont_tbl) %>%
     tidyr::replace_na(list(Label = ""))
+
+  tbl <- tbl %>%
+    mutate(
+      Variable = factor(
+        Variable,
+        levels = unique(c(variables, nonparametric))
+      )
+    ) %>%
+    arrange(Variable) %>%
+    mutate(
+      Variable = as.character(Variable)
+    )
+
   attr(tbl, "counts") <- count_attr
   tbl
 
