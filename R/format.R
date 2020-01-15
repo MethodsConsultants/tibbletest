@@ -19,6 +19,8 @@
 format_tbl <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE, remove_false = TRUE, p_val_digits = 3L) {
 
   assert_that(p_val_digits >= 2)
+  assert_that(class(obj)[1] == "tbl_test")
+  assert_that(!is.null(attr(obj, "counts")))
 
   obj_attr <- attr(obj, "counts")
 

@@ -129,6 +129,7 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     )
 
   attr(tbl, "counts") <- count_attr
+  class(tbl) <- c("tbl_test", class(tbl))
   tbl
 
 }
