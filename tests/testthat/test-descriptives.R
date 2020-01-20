@@ -52,6 +52,7 @@ test_that("descriptives produces correct output", {
     treatment_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(treat_out, "tbl_test")
 
   treat_out2 <- example_dat %>%
     dplyr::select(-treat2, -weight, -no_weight) %>%
@@ -65,6 +66,7 @@ test_that("descriptives produces correct output", {
     treatment_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(treat_out2, "tbl_test")
 
   cat_out <- example_dat %>%
     descriptives(
@@ -80,6 +82,7 @@ test_that("descriptives produces correct output", {
     cat_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(cat_out, "tbl_test")
 
   cont_out <- example_dat %>%
     descriptives(
@@ -95,10 +98,12 @@ test_that("descriptives produces correct output", {
     cont_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(cont_out, "tbl_test")
 
   simple_out <- example_dat %>%
     descriptives(variables = c("age", "sugar_factor", "gender", "happiness", "happy"))
   expect_equal(simple_out, simple_tbl)
+  expect_s3_class(simple_out, "tbl_test")
 
 })
 
@@ -168,6 +173,7 @@ test_that("descriptives produces correct weighted tables", {
     no_weight_treatment_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(no_weight_treat_out, "tbl_test")
 
   weight_treat_out <- example_dat %>%
     descriptives(
@@ -185,6 +191,7 @@ test_that("descriptives produces correct weighted tables", {
     weight_treatment_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(weight_treat_out, "tbl_test")
 
 })
 
@@ -235,6 +242,7 @@ test_that("descriptives produces correct non-parametric tables", {
     nonparametric_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(nonparametric_out, "tbl_test")
 
   expect_equal(
     nonparametric_out2 %>% select(-`P Value`),
@@ -245,6 +253,7 @@ test_that("descriptives produces correct non-parametric tables", {
     nonparametric_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(nonparametric_out2, "tbl_test")
 
   expect_equal(
     nonparametric_out3 %>% select(-`P Value`),
@@ -255,6 +264,7 @@ test_that("descriptives produces correct non-parametric tables", {
     nonparametric_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(nonparametric_out3, "tbl_test")
 
   nonparametric_weight_out <- example_dat %>%
     descriptives(
@@ -273,5 +283,6 @@ test_that("descriptives produces correct non-parametric tables", {
     nonparametric_weight_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+  expect_s3_class(nonparametric_weight_out, "tbl_test")
 
 })

@@ -81,22 +81,6 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     count_attr <- tibble(label = "Statistics", n = nrow(df))
   }
 
-  if (length(cat_vars) == 0) {
-
-    cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric)
-    attr(cont_tbl, "counts") <- count_attr
-    return(cont_tbl)
-
-  }
-
-  if (length(c(cont_vars, nonparametric)) == 0) {
-
-    cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights)
-    attr(cat_tbl, "counts") <- count_attr
-    return(cat_tbl)
-
-  }
-
   if (!is.null(weights) & !is.null(treatment)) {
 
     weight_mean <- df %>%
@@ -107,6 +91,50 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     if (weight_mean != 1) {
       message("Weights were normalized to a mean of 1 to preserve sample size in significance tests")
     }
+
+  }
+
+  if (length(cat_vars) == 0) {
+
+    cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric)
+
+    cont_tbl <- cont_tbl %>%
+      mutate(
+        Variable = factor(
+          Variable,
+          levels = unique(c(variables, nonparametric))
+        )
+      ) %>%
+      arrange(Variable) %>%
+      mutate(
+        Variable = as.character(Variable)
+      )
+
+    attr(cont_tbl, "counts") <- count_attr
+    class(cont_tbl) <- c("tbl_test", class(cont_tbl))
+    return(cont_tbl)
+
+  }
+
+  if (length(c(cont_vars, nonparametric)) == 0) {
+
+    cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights)
+
+    cat_tbl <- cat_tbl %>%
+      mutate(
+        Variable = factor(
+          Variable,
+          levels = variables
+        )
+      ) %>%
+      arrange(Variable) %>%
+      mutate(
+        Variable = as.character(Variable)
+      )
+
+    attr(cat_tbl, "counts") <- count_attr
+    class(cat_tbl) <- c("tbl_test", class(cat_tbl))
+    return(cat_tbl)
 
   }
 
