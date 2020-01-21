@@ -4,8 +4,13 @@
 \alias{format_tbl}
 \title{Formats the descriptives table outputted by \code{descriptives}}
 \usage{
-format_tbl(obj, add_Ns = TRUE, remove_duplicates = TRUE,
-  remove_false = TRUE, p_val_digits = 3L)
+format_tbl(
+  obj,
+  add_Ns = TRUE,
+  remove_duplicates = TRUE,
+  remove_false = TRUE,
+  p_val_digits = 3L
+)
 }
 \arguments{
 \item{obj}{<\code{tbl_df}> Tibble outputted by \code{descriptives}}

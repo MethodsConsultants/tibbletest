@@ -4,8 +4,13 @@
 \alias{descriptives}
 \title{Creates a table of summary statistics}
 \usage{
-descriptives(df, treatment = NULL, variables = NULL, weights = NULL,
-  nonparametric = NULL)
+descriptives(
+  df,
+  treatment = NULL,
+  variables = NULL,
+  weights = NULL,
+  nonparametric = NULL
+)
 }
 \arguments{
 \item{df}{<\code{tbl_df}> Data frame with treatment and variables of interest as columns.}
