@@ -23,7 +23,11 @@ add_propensity_weights <- function(df, treatment, ivs, impute_missing = FALSE) {
   assert_that(is.character(ivs))
   assert_that(all(ivs %in% colnames(df)))
 
-  fit_df <- df
+  fit_df <- df %>%
+	mutate_at(
+	  treatment,
+	  factor
+	)
 
   missing_ivs <- fit_df %>%
     select(ivs) %>%
