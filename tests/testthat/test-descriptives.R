@@ -68,6 +68,23 @@ test_that("descriptives produces correct output", {
   )
   expect_s3_class(treat_out2, "tbl_test")
 
+  treat_out3 <- example_dat %>%
+    descriptives(
+      treatment = treat,
+      variables = c(gender, age, sugar_factor, happiness, happy)
+    )
+  expect_equivalent(
+    treat_out3 %>% select(-`P Value`),
+    treatment_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    treat_out3 %>% pull(`P Value`),
+    treatment_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+  expect_s3_class(treat_out3, "tbl_test")
+
+
   cat_out <- example_dat %>%
     descriptives(
       treatment = "treat",
@@ -84,14 +101,30 @@ test_that("descriptives produces correct output", {
   )
   expect_s3_class(cat_out, "tbl_test")
 
+  cat_out2 <- example_dat %>%
+    descriptives(
+      treatment = treat,
+      variables = happiness
+    )
+  expect_equivalent(
+    cat_out2 %>% select(-`P Value`),
+    cat_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    cat_out2 %>% pull(`P Value`),
+    cat_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+  expect_s3_class(cat_out2, "tbl_test")
+
   cont_out <- example_dat %>%
     descriptives(
       treatment = "treat",
       variables = c("age", "sugar_factor")
     )
   expect_equivalent(
-    treat_out %>% select(-`P Value`),
-    treatment_tbl %>% select(-`P Value`)
+    cont_out %>% select(-`P Value`),
+    cont_tbl %>% select(-`P Value`)
   )
   expect_equal(
     cont_out %>% pull(`P Value`),
@@ -100,10 +133,32 @@ test_that("descriptives produces correct output", {
   )
   expect_s3_class(cont_out, "tbl_test")
 
+  cont_out2 <- example_dat %>%
+    descriptives(
+      treatment = treat,
+      variables = c(age, sugar_factor)
+    )
+  expect_equivalent(
+    cont_out2 %>% select(-`P Value`),
+    cont_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    cont_out2 %>% pull(`P Value`),
+    cont_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+  expect_s3_class(cont_out2, "tbl_test")
+
+
   simple_out <- example_dat %>%
     descriptives(variables = c("age", "sugar_factor", "gender", "happiness", "happy"))
   expect_equivalent(simple_out, simple_tbl)
   expect_s3_class(simple_out, "tbl_test")
+
+  simple_out2 <- example_dat %>%
+    descriptives(variables = c(age, sugar_factor, gender, happiness, happy))
+  expect_equivalent(simple_out2, simple_tbl)
+  expect_s3_class(simple_out2, "tbl_test")
 
 })
 
@@ -175,6 +230,25 @@ test_that("descriptives produces correct weighted tables", {
   )
   expect_s3_class(no_weight_treat_out, "tbl_test")
 
+  no_weight_treat_out2 <- example_dat %>%
+    descriptives(
+      treatment = treat,
+      variables = c(gender, age, sugar_factor, happiness, happy),
+      weights = no_weight
+    )
+
+  expect_equivalent(
+    no_weight_treat_out2 %>% select(-`P Value`),
+    no_weight_treatment_tbl %>% select(-`P Value`)
+  )
+  expect_equivalent(
+    no_weight_treat_out2 %>% pull(`P Value`),
+    no_weight_treatment_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+  expect_s3_class(no_weight_treat_out2, "tbl_test")
+
+
   weight_treat_out <- example_dat %>%
     descriptives(
       treatment = "treat",
@@ -192,6 +266,24 @@ test_that("descriptives produces correct weighted tables", {
     tolerance = 0.0001
   )
   expect_s3_class(weight_treat_out, "tbl_test")
+
+  weight_treat_out2 <- example_dat %>%
+    descriptives(
+      treatment = treat,
+      variables = c(gender, age, sugar_factor, happiness, happy),
+      weights = weight
+    )
+
+  expect_equivalent(
+    weight_treat_out2 %>% select(-`P Value`),
+    weight_treatment_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    weight_treat_out2 %>% pull(`P Value`),
+    weight_treatment_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+  expect_s3_class(weight_treat_out2, "tbl_test")
 
 })
 
@@ -233,6 +325,13 @@ test_that("descriptives produces correct non-parametric tables", {
       nonparametric = "sugar_factor"
     )
 
+  nonparametric_out4 <- example_dat %>%
+    descriptives(
+      treatment = treat,
+      variables = c(happy, age),
+      nonparametric = sugar_factor
+    )
+
   expect_equivalent(
     nonparametric_out %>% select(-`P Value`),
     nonparametric_tbl %>% select(-`P Value`)
@@ -266,6 +365,17 @@ test_that("descriptives produces correct non-parametric tables", {
   )
   expect_s3_class(nonparametric_out3, "tbl_test")
 
+  expect_equivalent(
+    nonparametric_out4 %>% select(-`P Value`),
+    nonparametric_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    nonparametric_out4 %>% pull(`P Value`),
+    nonparametric_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+  expect_s3_class(nonparametric_out4, "tbl_test")
+
   nonparametric_weight_out <- example_dat %>%
     descriptives(
       treatment = "treat",
@@ -284,5 +394,24 @@ test_that("descriptives produces correct non-parametric tables", {
     tolerance = 0.0001
   )
   expect_s3_class(nonparametric_weight_out, "tbl_test")
+
+  nonparametric_weight_out2 <- example_dat %>%
+    descriptives(
+      treatment = treat,
+      variables = c(age, sugar_factor),
+      nonparametric = c(age, sugar_factor),
+      weights = weight
+    )
+
+  expect_equivalent(
+    nonparametric_weight_out2 %>% select(-`P Value`),
+    nonparametric_weight_tbl %>% select(-`P Value`)
+  )
+  expect_equal(
+    nonparametric_weight_out2 %>% pull(`P Value`),
+    nonparametric_weight_tbl %>% pull(`P Value`),
+    tolerance = 0.0001
+  )
+  expect_s3_class(nonparametric_weight_out2, "tbl_test")
 
 })

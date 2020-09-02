@@ -2,22 +2,22 @@
 % Please edit documentation in R/propensity-weighting.R
 \name{add_propensity_weights}
 \alias{add_propensity_weights}
-\title{Calculates inverse probability of treatment weights using a random forest}
+\title{Calculates inverse probability of treatment weights using a random forest.}
 \usage{
 add_propensity_weights(df, treatment, ivs, impute_missing = FALSE)
 }
 \arguments{
-\item{df}{<\code{tbl}> Data frame on which to perform weighting}
+\item{df}{<\code{tbl_df}> Data frame on which to perform weighting.}
 
-\item{treatment}{<\code{character(1)}> String with name of treatment column}
+\item{treatment}{<\code{tidy-select}> Treatment column to use in propensity score model.}
 
-\item{ivs}{<\code{character}> Character vector with names of independent variabes to use in propensity score model}
+\item{ivs}{<\code{tidy-select}> Columns of independent variables to use in propensity score model.}
 
-\item{impute_missing}{<\code{lgl}> If \code{TRUE} will internally impute missing values in IVs for propensity score fit}
+\item{impute_missing}{<\code{lgl}> If \code{TRUE} will internally impute missing values in IVs for propensity score fit.}
 }
 \value{
-<\code{tbl}> Data frame with new column for propensity weights
+<\code{tbl_df}> Data frame with new column for propensity weights.
 }
 \description{
-Calculates inverse probability of treatment weights using a random forest
+Calculates inverse probability of treatment weights using a random forest.
 }

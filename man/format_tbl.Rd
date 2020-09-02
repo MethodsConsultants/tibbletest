@@ -2,7 +2,7 @@
 % Please edit documentation in R/format.R
 \name{format_tbl}
 \alias{format_tbl}
-\title{Formats the descriptives table outputted by \code{descriptives}}
+\title{Formats the descriptives table outputted by \code{descriptives}.}
 \usage{
 format_tbl(
   obj,
@@ -13,7 +13,7 @@ format_tbl(
 )
 }
 \arguments{
-\item{obj}{<\code{tbl_df}> Tibble outputted by \code{descriptives}}
+\item{obj}{<\code{tbl_df}> Tibble outputted by \code{descriptives}.}
 
 \item{add_Ns}{<\code{logical(1)}> Should treatment counts be added to column names?}
 
@@ -22,7 +22,7 @@ If TRUE, variable names and p-values will be presented only once on their own ro
 
 \item{remove_false}{<\code{logical(1)}> Should binary variables only show the N and percent of TRUE?}
 
-\item{p_val_digits}{<\code{integer(1)}> Number of digits to round p-values}
+\item{p_val_digits}{<\code{integer(1)}> Number of digits to round p-values.}
 }
 \value{
 <\code{tbl_df}> Formatted tibble

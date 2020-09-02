@@ -1,14 +1,14 @@
-#' Formats the descriptives table outputted by `descriptives`
+#' Formats the descriptives table outputted by `descriptives`.
 #'
 #' Allows for easy formatting of summary statistics table. Treatment group counts are added to the column names,
 #' duplicated categorical variable names and p-values are removed, and p-values are rounded.
 #'
-#' @param obj <`tbl_df`> Tibble outputted by `descriptives`
+#' @param obj <`tbl_df`> Tibble outputted by `descriptives`.
 #' @param add_Ns <`logical(1)`> Should treatment counts be added to column names?
 #' @param remove_duplicates <`logical(1)`> Should repeated variable names and p-values for categorical variables be removed?
 #' If TRUE, variable names and p-values will be presented only once on their own row.
 #' @param remove_false <`logical(1)`> Should binary variables only show the N and percent of TRUE?
-#' @param p_val_digits <`integer(1)`> Number of digits to round p-values
+#' @param p_val_digits <`integer(1)`> Number of digits to round p-values.
 #'
 #' @return <`tbl_df`> Formatted tibble
 #'
