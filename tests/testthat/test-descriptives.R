@@ -9,7 +9,8 @@ treatment_tbl <- tibble::tribble(
          "happy",     "no",   "56 (23.24%)",    "49 (21.3%)",  0.855356296516553,
          "happy",    "yes",    "47 (19.5%)",   "44 (19.13%)",  0.855356296516553,
          "happy",    "Yes",  "138 (57.26%)",  "137 (59.57%)",  0.855356296516553
-)
+) %>%
+  dplyr::arrange(Variable, Label)
 
 cont_tbl <- tibble::tribble(
        ~Variable,          ~candy,    ~`ice cream`,         ~`P Value`,
@@ -21,7 +22,8 @@ cat_tbl <- tibble::tribble(
     ~Variable,  ~Label,         ~candy,  ~`ice cream`,        ~`P Value`,
   "happiness", "happy", "185 (76.76%)", "181 (78.7%)", 0.694415226643762,
   "happiness",   "sad",  "56 (23.24%)",  "49 (21.3%)", 0.694415226643762
-)
+) %>%
+  dplyr::arrange(Variable, Label)
 
 simple_tbl <- tibble::tribble(
        ~Variable,   ~Label,    ~Statistics,
@@ -34,7 +36,8 @@ simple_tbl <- tibble::tribble(
          "happy",     "no", "105 (22.25%)",
          "happy",    "yes",  "91 (19.28%)",
          "happy",    "Yes", "276 (58.47%)"
-)
+) %>%
+  dplyr::arrange(Variable, Label)
 
 test_that("descriptives produces correct output", {
 
@@ -42,37 +45,47 @@ test_that("descriptives produces correct output", {
     descriptives(
       treatment = "treat",
       variables = c("gender", "age", "sugar_factor", "happiness", "happy")
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
+
   expect_equivalent(
     treat_out %>% select(-`P Value`),
     treatment_tbl %>% select(-`P Value`)
   )
+
   expect_equal(
     treat_out %>% pull(`P Value`),
     treatment_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+
   expect_s3_class(treat_out, "tbl_test")
 
   treat_out2 <- example_dat %>%
     dplyr::select(-treat2, -weight, -no_weight) %>%
-    descriptives(treatment = "treat")
+    descriptives(treatment = "treat") %>%
+    dplyr::arrange(Variable, Label)
+
   expect_equivalent(
     treat_out2 %>% select(-`P Value`),
     treatment_tbl %>% select(-`P Value`)
   )
+
   expect_equal(
     treat_out2 %>% pull(`P Value`),
     treatment_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+
   expect_s3_class(treat_out2, "tbl_test")
 
   treat_out3 <- example_dat %>%
     descriptives(
       treatment = treat,
       variables = c(gender, age, sugar_factor, happiness, happy)
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
+
   expect_equivalent(
     treat_out3 %>% select(-`P Value`),
     treatment_tbl %>% select(-`P Value`)
@@ -89,32 +102,40 @@ test_that("descriptives produces correct output", {
     descriptives(
       treatment = "treat",
       variables = "happiness"
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
+
   expect_equivalent(
     cat_out %>% select(-`P Value`),
     cat_tbl %>% select(-`P Value`)
   )
+
   expect_equal(
     cat_out %>% pull(`P Value`),
     cat_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+
   expect_s3_class(cat_out, "tbl_test")
 
   cat_out2 <- example_dat %>%
     descriptives(
       treatment = treat,
       variables = happiness
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
+
   expect_equivalent(
     cat_out2 %>% select(-`P Value`),
     cat_tbl %>% select(-`P Value`)
   )
+
   expect_equal(
     cat_out2 %>% pull(`P Value`),
     cat_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+
   expect_s3_class(cat_out2, "tbl_test")
 
   cont_out <- example_dat %>%
@@ -122,15 +143,18 @@ test_that("descriptives produces correct output", {
       treatment = "treat",
       variables = c("age", "sugar_factor")
     )
+
   expect_equivalent(
     cont_out %>% select(-`P Value`),
     cont_tbl %>% select(-`P Value`)
   )
+
   expect_equal(
     cont_out %>% pull(`P Value`),
     cont_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+
   expect_s3_class(cont_out, "tbl_test")
 
   cont_out2 <- example_dat %>%
@@ -138,26 +162,34 @@ test_that("descriptives produces correct output", {
       treatment = treat,
       variables = c(age, sugar_factor)
     )
+
   expect_equivalent(
     cont_out2 %>% select(-`P Value`),
     cont_tbl %>% select(-`P Value`)
   )
+
   expect_equal(
     cont_out2 %>% pull(`P Value`),
     cont_tbl %>% pull(`P Value`),
     tolerance = 0.0001
   )
+
   expect_s3_class(cont_out2, "tbl_test")
 
-
   simple_out <- example_dat %>%
-    descriptives(variables = c("age", "sugar_factor", "gender", "happiness", "happy"))
+    descriptives(variables = c("age", "sugar_factor", "gender", "happiness", "happy")) %>%
+    dplyr::arrange(Variable, Label)
+
   expect_equivalent(simple_out, simple_tbl)
+
   expect_s3_class(simple_out, "tbl_test")
 
   simple_out2 <- example_dat %>%
-    descriptives(variables = c(age, sugar_factor, gender, happiness, happy))
+    descriptives(variables = c(age, sugar_factor, gender, happiness, happy)) %>%
+    dplyr::arrange(Variable, Label)
+
   expect_equivalent(simple_out2, simple_tbl)
+
   expect_s3_class(simple_out2, "tbl_test")
 
 })
@@ -195,7 +227,8 @@ no_weight_treatment_tbl <- tibble::tribble(
          "happy",     "no",        "23.24%",         "21.3%",  0.855356296516553,
          "happy",    "yes",         "19.5%",        "19.13%",  0.855356296516553,
          "happy",    "Yes",        "57.26%",        "59.57%",  0.855356296516553,
-)
+) %>%
+  dplyr::arrange(Variable, Label)
 
 weight_treatment_tbl <- tibble::tribble(
        ~Variable,   ~Label,          ~candy,    ~`ice cream`,          ~`P Value`,
@@ -208,7 +241,8 @@ weight_treatment_tbl <- tibble::tribble(
          "happy",     "no",         "22.9%",        "22.62%",   0.988678719678186,
          "happy",    "yes",        "19.22%",         "18.8%",   0.988678719678186,
          "happy",    "Yes",        "57.89%",        "58.58%",   0.988678719678186
-)
+) %>%
+  dplyr::arrange(Variable, Label)
 
 test_that("descriptives produces correct weighted tables", {
 
@@ -217,7 +251,8 @@ test_that("descriptives produces correct weighted tables", {
       treatment = "treat",
       variables = c("gender", "age", "sugar_factor", "happiness", "happy"),
       weights = "no_weight"
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
 
   expect_equivalent(
     no_weight_treat_out %>% select(-`P Value`),
@@ -235,7 +270,8 @@ test_that("descriptives produces correct weighted tables", {
       treatment = treat,
       variables = c(gender, age, sugar_factor, happiness, happy),
       weights = no_weight
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
 
   expect_equivalent(
     no_weight_treat_out2 %>% select(-`P Value`),
@@ -254,7 +290,8 @@ test_that("descriptives produces correct weighted tables", {
       treatment = "treat",
       variables = c("gender", "age", "sugar_factor", "happiness", "happy"),
       weights = "weight"
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
 
   expect_equivalent(
     weight_treat_out %>% select(-`P Value`),
@@ -272,7 +309,8 @@ test_that("descriptives produces correct weighted tables", {
       treatment = treat,
       variables = c(gender, age, sugar_factor, happiness, happy),
       weights = weight
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
 
   expect_equivalent(
     weight_treat_out2 %>% select(-`P Value`),
@@ -294,7 +332,8 @@ nonparametric_tbl <- tibble::tribble(
          "happy",  "Yes",      "138 (57.26%)",      "137 (59.57%)",  0.855356296516553,
            "age",     "",     "42.26 (22.62)",     "42.39 (21.61)",  0.946208619349777,
   "sugar_factor",     "", "0.44 [0.18, 0.72]", "0.52 [0.28, 0.76]", 0.0116654898090404
-)
+) %>%
+  dplyr::arrange(Variable, Label)
 
 nonparametric_weight_tbl <- tibble::tribble(
        ~Variable,              ~candy,       ~`ice cream`,          ~`P Value`,
@@ -309,28 +348,32 @@ test_that("descriptives produces correct non-parametric tables", {
     descriptives(
       treatment = "treat",
       nonparametric = "sugar_factor"
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
 
   nonparametric_out2 <- example_dat %>%
     descriptives(
       treatment = "treat",
       variables = c("happy", "age", "sugar_factor"),
       nonparametric = "sugar_factor"
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
 
   nonparametric_out3 <- example_dat %>%
     descriptives(
       treatment = "treat",
       variables = c("happy", "age"),
       nonparametric = "sugar_factor"
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
 
   nonparametric_out4 <- example_dat %>%
     descriptives(
       treatment = treat,
       variables = c(happy, age),
       nonparametric = sugar_factor
-    )
+    ) %>%
+    dplyr::arrange(Variable, Label)
 
   expect_equivalent(
     nonparametric_out %>% select(-`P Value`),
