@@ -4,7 +4,9 @@
 \name{example_dat}
 \alias{example_dat}
 \title{Example dataset for package demonstration}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 501 rows and 9 columns.}
+\format{
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 501 rows and 9 columns.
+}
 \usage{
 example_dat
 }
