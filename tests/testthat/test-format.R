@@ -18,9 +18,9 @@ test_that("all FALSE only changes p-values", {
       remove_false = FALSE
     )
 
-  expect_equal(
-    all_false %>% dplyr::select(-`P Value`),
-    descriptives_obj %>% dplyr::select(-`P Value`)
+  expect_equivalent(
+    all_false %>% select(-`P Value`),
+    descriptives_obj %>% select(-`P Value`)
   )
 
 })

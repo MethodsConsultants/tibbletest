@@ -6,9 +6,9 @@ treatment_tbl <- tibble::tribble(
   "sugar_factor",       "",    "0.46 (0.3)",   "0.52 (0.29)", 0.0128504785023786,
      "happiness",  "happy",  "185 (76.76%)",   "181 (78.7%)",  0.694415226643762,
      "happiness",    "sad",   "56 (23.24%)",    "49 (21.3%)",  0.694415226643762,
+         "happy",    "Yes",  "138 (57.26%)",  "137 (59.57%)",  0.855356296516553,
          "happy",     "no",   "56 (23.24%)",    "49 (21.3%)",  0.855356296516553,
-         "happy",    "yes",    "47 (19.5%)",   "44 (19.13%)",  0.855356296516553,
-         "happy",    "Yes",  "138 (57.26%)",  "137 (59.57%)",  0.855356296516553
+         "happy",    "yes",    "47 (19.5%)",   "44 (19.13%)",  0.855356296516553
 )
 
 cont_tbl <- tibble::tribble(
@@ -25,15 +25,15 @@ cat_tbl <- tibble::tribble(
 
 simple_tbl <- tibble::tribble(
        ~Variable,   ~Label,    ~Statistics,
+       "age",       "",  "42.3 (22.1)",
+       "sugar_factor",       "",   "0.49 (0.3)",
         "gender", "female", "235 (46.91%)",
         "gender",   "male", "266 (53.09%)",
      "happiness",  "happy", "367 (77.75%)",
      "happiness",    "sad", "105 (22.25%)",
+         "happy",    "Yes", "276 (58.47%)",
          "happy",     "no", "105 (22.25%)",
          "happy",    "yes",  "91 (19.28%)",
-         "happy",    "Yes", "276 (58.47%)",
-           "age",       "",  "42.3 (22.1)",
-  "sugar_factor",       "",   "0.49 (0.3)"
 )
 
 test_that("descriptives produces correct output", {
@@ -43,7 +43,7 @@ test_that("descriptives produces correct output", {
       treatment = "treat",
       variables = c("gender", "age", "sugar_factor", "happiness", "happy")
     )
-  expect_equal(
+  expect_equivalent(
     treat_out %>% select(-`P Value`),
     treatment_tbl %>% select(-`P Value`)
   )
@@ -57,7 +57,7 @@ test_that("descriptives produces correct output", {
   treat_out2 <- example_dat %>%
     dplyr::select(-treat2, -weight, -no_weight) %>%
     descriptives(treatment = "treat")
-  expect_equal(
+  expect_equivalent(
     treat_out2 %>% select(-`P Value`),
     treatment_tbl %>% select(-`P Value`)
   )
@@ -73,7 +73,7 @@ test_that("descriptives produces correct output", {
       treatment = "treat",
       variables = "happiness"
     )
-  expect_equal(
+  expect_equivalent(
     cat_out %>% select(-`P Value`),
     cat_tbl %>% select(-`P Value`)
   )
@@ -89,7 +89,7 @@ test_that("descriptives produces correct output", {
       treatment = "treat",
       variables = c("age", "sugar_factor")
     )
-  expect_equal(
+  expect_equivalent(
     treat_out %>% select(-`P Value`),
     treatment_tbl %>% select(-`P Value`)
   )
@@ -102,7 +102,7 @@ test_that("descriptives produces correct output", {
 
   simple_out <- example_dat %>%
     descriptives(variables = c("age", "sugar_factor", "gender", "happiness", "happy"))
-  expect_equal(simple_out, simple_tbl)
+  expect_equivalent(simple_out, simple_tbl)
   expect_s3_class(simple_out, "tbl_test")
 
 })
@@ -137,9 +137,9 @@ no_weight_treatment_tbl <- tibble::tribble(
   "sugar_factor",       "",    "0.46 (0.3)",   "0.52 (0.29)", 0.0128504785023786,
      "happiness",  "happy",        "76.76%",         "78.7%",  0.694415226643762,
      "happiness",    "sad",        "23.24%",         "21.3%",  0.694415226643762,
+         "happy",    "Yes",        "57.26%",        "59.57%",  0.855356296516553,
          "happy",     "no",        "23.24%",         "21.3%",  0.855356296516553,
          "happy",    "yes",         "19.5%",        "19.13%",  0.855356296516553,
-         "happy",    "Yes",        "57.26%",        "59.57%",  0.855356296516553
 )
 
 weight_treatment_tbl <- tibble::tribble(
@@ -150,9 +150,9 @@ weight_treatment_tbl <- tibble::tribble(
   "sugar_factor",       "",    "0.45 (0.3)",   "0.52 (0.28)", 0.00920038384810278,
      "happiness",  "happy",         "77.1%",        "77.38%",    0.94558985790769,
      "happiness",    "sad",         "22.9%",        "22.62%",    0.94558985790769,
+         "happy",    "Yes",        "57.89%",        "58.58%",   0.988678719678186,
          "happy",     "no",         "22.9%",        "22.62%",   0.988678719678186,
          "happy",    "yes",        "19.22%",         "18.8%",   0.988678719678186,
-         "happy",    "Yes",        "57.89%",        "58.58%",   0.988678719678186,
 )
 
 test_that("descriptives produces correct weighted tables", {
@@ -164,11 +164,11 @@ test_that("descriptives produces correct weighted tables", {
       weights = "no_weight"
     )
 
-  expect_equal(
+  expect_equivalent(
     no_weight_treat_out %>% select(-`P Value`),
     no_weight_treatment_tbl %>% select(-`P Value`)
   )
-  expect_equal(
+  expect_equivalent(
     no_weight_treat_out %>% pull(`P Value`),
     no_weight_treatment_tbl %>% pull(`P Value`),
     tolerance = 0.0001
@@ -182,7 +182,7 @@ test_that("descriptives produces correct weighted tables", {
       weights = "weight"
     )
 
-  expect_equal(
+  expect_equivalent(
     weight_treat_out %>% select(-`P Value`),
     weight_treatment_tbl %>% select(-`P Value`)
   )
@@ -197,9 +197,9 @@ test_that("descriptives produces correct weighted tables", {
 
 nonparametric_tbl <- tibble::tribble(
        ~Variable, ~Label,              ~candy,        ~`ice cream`,         ~`P Value`,
+         "happy",  "Yes",      "138 (57.26%)",      "137 (59.57%)",  0.855356296516553,
          "happy",   "no",       "56 (23.24%)",        "49 (21.3%)",  0.855356296516553,
          "happy",  "yes",        "47 (19.5%)",       "44 (19.13%)",  0.855356296516553,
-         "happy",  "Yes",      "138 (57.26%)",      "137 (59.57%)",  0.855356296516553,
            "age",     "",     "42.26 (22.62)",     "42.39 (21.61)",  0.946208619349777,
   "sugar_factor",     "", "0.44 [0.18, 0.72]", "0.52 [0.28, 0.76]", 0.0116654898090404
 )
@@ -233,7 +233,7 @@ test_that("descriptives produces correct non-parametric tables", {
       nonparametric = "sugar_factor"
     )
 
-  expect_equal(
+  expect_equivalent(
     nonparametric_out %>% select(-`P Value`),
     nonparametric_tbl %>% select(-`P Value`)
   )
@@ -244,7 +244,7 @@ test_that("descriptives produces correct non-parametric tables", {
   )
   expect_s3_class(nonparametric_out, "tbl_test")
 
-  expect_equal(
+  expect_equivalent(
     nonparametric_out2 %>% select(-`P Value`),
     nonparametric_tbl %>% select(-`P Value`)
   )
@@ -255,7 +255,7 @@ test_that("descriptives produces correct non-parametric tables", {
   )
   expect_s3_class(nonparametric_out2, "tbl_test")
 
-  expect_equal(
+  expect_equivalent(
     nonparametric_out3 %>% select(-`P Value`),
     nonparametric_tbl %>% select(-`P Value`)
   )
@@ -274,7 +274,7 @@ test_that("descriptives produces correct non-parametric tables", {
       weights = "weight"
     )
 
-  expect_equal(
+  expect_equivalent(
     nonparametric_weight_out %>% select(-`P Value`),
     nonparametric_weight_tbl %>% select(-`P Value`)
   )
