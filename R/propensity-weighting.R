@@ -1,11 +1,11 @@
-#' Calculates inverse probability of treatment weights using a random forest
+#' Calculates inverse probability of treatment weights using a random forest.
 #'
-#' @param df <`tbl`> Data frame on which to perform weighting
-#' @param treatment <`character(1)`> String with name of treatment column
-#' @param ivs <`character`> Character vector with names of independent variabes to use in propensity score model
-#' @param impute_missing <`lgl`> If `TRUE` will internally impute missing values in IVs for propensity score fit
+#' @param df <`tbl_df`> Data frame on which to perform weighting.
+#' @param treatment <`tidy-select`> Treatment column to use in propensity score model.
+#' @param ivs <`tidy-select`> Columns of independent variables to use in propensity score model.
+#' @param impute_missing <`lgl`> If `TRUE` will internally impute missing values in IVs for propensity score fit.
 #'
-#' @return <`tbl`> Data frame with new column for propensity weights
+#' @return <`tbl_df`> Data frame with new column for propensity weights.
 #'
 #' @import purrr
 #' @import dplyr
@@ -16,18 +16,24 @@ add_propensity_weights <- function(df, treatment, ivs, impute_missing = FALSE) {
 
   assert_that(is.data.frame(df))
 
-  assert_that(is.string(treatment))
+  treatment <- df %>%
+    select({{ treatment }}) %>%
+    colnames()
+
   assert_that(is_categorical_variable(df, treatment))
   assert_that(noNA(df[[treatment]]))
 
-  assert_that(is.character(ivs))
+  ivs <- df %>%
+    select({{ ivs }}) %>%
+    colnames()
+
   assert_that(all(ivs %in% colnames(df)))
 
   fit_df <- df %>%
-	mutate_at(
-	  treatment,
-	  factor
-	)
+  	mutate_at(
+  	  treatment,
+  	  factor
+  	)
 
   missing_ivs <- fit_df %>%
     select(ivs) %>%

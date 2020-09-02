@@ -3,10 +3,10 @@
 #' Generates a table with summary statistics for each variable, optionally split by a grouping variable.
 #'
 #' @param df <`tbl_df`> Data frame with treatment and variables of interest as columns.
-#' @param variables <`character`> Character vector of column names. If left blank, will be inferred from data.
-#' @param treatment <`character(1)`> String with name of treatment column. If left blank, will produce univariate summary statistics.
-#' @param weights <`character(1)`> String with name of column with observation weights. If left blank, will not use observation weights.
-#' @param nonparametric <`character`> Character vector of continuous variables names to calculate median/IQR/non-parametric test
+#' @param variables <`tidy-select`> Columns to summarize in table. If left blank, will be inferred from data.
+#' @param treatment <`tidy-select`> Treatment column. If left blank, will produce univariate summary statistics.
+#' @param weights <`tidy-select`> Column with observation weights. If left blank, will not use observation weights.
+#' @param nonparametric <`tidy-select`> Columns of continuous variables to calculate median/IQR/non-parametric test.
 #'
 #' @return <`tbl_df`> Tibble with summary statistics split by treatment (optional).
 #'
@@ -19,26 +19,32 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 
   assert_that(is.data.frame(df))
 
-  if (!is.null(treatment)) {
-    assert_that(is.string(treatment))
+  if (!missing(treatment)) {
+    treatment <- df %>%
+      select({{ treatment }}) %>%
+      colnames()
     assert_that(is_categorical_variable(df, treatment))
   }
 
-  if (!is.null(variables)) {
-    assert_that(is.character(variables))
-    assert_that(all(variables %in% colnames(df)))
+  if (!missing(variables)) {
+    variables <- df %>%
+      select({{ variables }}) %>%
+      colnames()
   }
 
-  if (!is.null(weights)) {
-    assert_that(is.string(weights))
+  if (!missing(weights)) {
+    weights <- df %>%
+      select({{ weights }}) %>%
+      colnames()
     assert_that(is.numeric(df[[weights]]))
     assert_that(noNA(df[[weights]]))
     assert_that(all(df[[weights]] > 0))
   }
 
-  if (!is.null(nonparametric)) {
-    assert_that(is.character(nonparametric))
-    assert_that(all(nonparametric %in% colnames(df)))
+  if (!missing(nonparametric)) {
+    nonparametric <- df %>%
+      select({{ nonparametric }}) %>%
+      colnames()
     assert_that(all(map_lgl(nonparametric, is_numeric_variable, df = df)))
   }
 

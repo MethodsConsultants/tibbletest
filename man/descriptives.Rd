@@ -15,13 +15,13 @@ descriptives(
 \arguments{
 \item{df}{<\code{tbl_df}> Data frame with treatment and variables of interest as columns.}
 
-\item{treatment}{<\code{character(1)}> String with name of treatment column. If left blank, will produce univariate summary statistics.}
+\item{treatment}{<\code{tidy-select}> Treatment column. If left blank, will produce univariate summary statistics.}
 
-\item{variables}{<\code{character}> Character vector of column names. If left blank, will be inferred from data.}
+\item{variables}{<\code{tidy-select}> Columns to summarize in table. If left blank, will be inferred from data.}
 
-\item{weights}{<\code{character(1)}> String with name of column with observation weights. If left blank, will not use observation weights.}
+\item{weights}{<\code{tidy-select}> Column with observation weights. If left blank, will not use observation weights.}
 
-\item{nonparametric}{<\code{character}> Character vector of continuous variables names to calculate median/IQR/non-parametric test}
+\item{nonparametric}{<\code{tidy-select}> Columns of continuous variables to calculate median/IQR/non-parametric test.}
 }
 \value{
 <\code{tbl_df}> Tibble with summary statistics split by treatment (optional).
