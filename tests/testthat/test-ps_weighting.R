@@ -161,3 +161,22 @@ test_that("Imputation works when 1 categorical IV", {
   expect_equal(mean(iv_happiness2$propensity_weight), 1)
 
 })
+
+test_that("propensity weighting results are stable from run to run", {
+
+  output <- subset_dat %>%
+    add_propensity_weights(
+      treatment = "treat",
+      ivs = c("age", "sugar_factor", "gender")
+    )
+
+  output2 <- subset_dat %>%
+    add_propensity_weights(
+      treatment = "treat",
+      ivs = c("age", "sugar_factor", "gender")
+    )
+
+  expect_equal(output, output2)
+
+})
+

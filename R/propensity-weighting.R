@@ -14,6 +14,8 @@
 #' @export
 add_propensity_weights <- function(df, treatment, ivs, impute_missing = FALSE) {
 
+  set.seed(1)
+
   assert_that(is.data.frame(df))
 
   treatment <- df %>%
@@ -79,12 +81,12 @@ add_propensity_weights <- function(df, treatment, ivs, impute_missing = FALSE) {
 
   if (missing_ivs > 0 & length(ivs) > 1) {
 
-      fit_df <- fit_df %>%
-        select(ivs) %>%
-        mutate_if(is.character, as.factor) %>%
-        mice::mice(m = 1, print = FALSE) %>%
-        mice::complete() %>%
-        mutate(!!treatment := fit_df[[treatment]])
+    fit_df <- fit_df %>%
+      select(ivs) %>%
+      mutate_if(is.character, as.factor) %>%
+      mice::mice(m = 1, print = FALSE) %>%
+      mice::complete() %>%
+      mutate(!!treatment := fit_df[[treatment]])
 
   }
 
