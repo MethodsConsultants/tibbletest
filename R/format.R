@@ -46,14 +46,16 @@ format_tbl <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE, remove_fals
     tbl <- tbl %>%
       mutate(Variable = as.character(Variable))
 
-    if (all(tbl$Label %in% c("TRUE", "FALSE")) & remove_false) {
+    if ("Label" %in% colnames(tbl)) {
+      if (all(tbl$Label %in% c("TRUE", "FALSE")) & remove_false) {
 
-      tbl <- tbl %>%
-        filter(Label == "TRUE") %>%
-        mutate(Label = "")
+        tbl <- tbl %>%
+          filter(Label == "TRUE") %>%
+          mutate(Label = "")
 
-      return(tbl)
+        return(tbl)
 
+      }
     }
 
     if (nrow(tbl) == 1) {

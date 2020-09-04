@@ -146,3 +146,26 @@ test_that("works in univariate case", {
   )
 
 })
+
+cont_only_obj <- example_dat %>%
+  descriptives(
+    variables = c(age, sugar_factor)
+  )
+
+cont_only_truth <- tibble::tribble(
+       ~Variable, ~`Statistics (N=501)`,
+           "age",         "42.3 (22.1)",
+  "sugar_factor",          "0.49 (0.3)"
+)
+
+test_that("works with only continuous variables", {
+
+  cont_only <- cont_only_obj %>%
+    format_tbl()
+
+  expect_equal(
+    cont_only,
+    cont_only_truth
+  )
+
+})
