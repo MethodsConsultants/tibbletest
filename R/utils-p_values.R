@@ -10,7 +10,6 @@
 #'
 #' @importFrom survey svydesign svychisq
 #' @import purrr
-#' @importFrom rlang !!
 #'
 #' @noRd
 p_chi_fisher <- function(df, var, treatment, weight_var) {
@@ -18,7 +17,7 @@ p_chi_fisher <- function(df, var, treatment, weight_var) {
   if (any(df[[weight_var]] != 1)) {
 
     df <- df %>%
-      tidyr::drop_na(!!var, !!treatment)
+      tidyr::drop_na(.data[[var]], .data[[treatment]])
 
     survey_obj <- svydesign(~1, data = df, weights = df[[weight_var]])
 
@@ -75,7 +74,6 @@ p_chi_fisher <- function(df, var, treatment, weight_var) {
 #'
 #' @import dplyr
 #' @importFrom survey svydesign svyglm regTermTest
-#' @importFrom rlang !!
 #'
 #' @noRd
 p_anova <- function(df, var, treatment, weight_var) {
@@ -83,7 +81,7 @@ p_anova <- function(df, var, treatment, weight_var) {
   if (any(df[[weight_var]] != 1)) {
 
     df <- df %>%
-      tidyr::drop_na(!!var, !!treatment)
+      tidyr::drop_na(.data[[var]], .data[[treatment]])
 
     survey_obj <- svydesign(~1, data = df, weights = df[[weight_var]])
 
@@ -118,7 +116,6 @@ p_anova <- function(df, var, treatment, weight_var) {
 #' @return <`numeric(1)`> p-value
 #'
 #' @importFrom survey svydesign svyranktest
-#' @importFrom rlang !!
 #'
 #' @noRd
 p_kruskal <- function(df, var, treatment, weight_var) {
@@ -126,7 +123,7 @@ p_kruskal <- function(df, var, treatment, weight_var) {
   if (any(df[[weight_var]] != 1)) {
 
     df <- df %>%
-      tidyr::drop_na(!!var, !!treatment)
+      tidyr::drop_na(.data[[var]], .data[[treatment]])
 
     survey_obj <- svydesign(~1, data = df, weights = df[[weight_var]])
 

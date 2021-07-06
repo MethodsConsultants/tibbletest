@@ -25,7 +25,8 @@ Imports:
     assertthat,
     survey,
     ranger,
-    mice
+    VIM,
+    withr
 Suggests: 
     testthat (>= 2.1.0),
     covr

@@ -76,12 +76,10 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 
   if (!is.null(treatment)) {
 
-    treat_quo <- sym(treatment)
-
     count_attr <- df %>%
-      tidyr::drop_na(!!treat_quo) %>%
-      count(!!treat_quo) %>%
-      rename(label = !!quo_name(treat_quo))
+      tidyr::drop_na(.data[[treatment]]) %>%
+      count(.data[[treatment]]) %>%
+      rename(label = treatment)
 
   } else {
     count_attr <- tibble(label = "Statistics", n = nrow(df))
@@ -90,8 +88,8 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
   if (!is.null(weights) & !is.null(treatment)) {
 
     weight_mean <- df %>%
-      drop_na(!!treatment) %>%
-      pull(!!weights) %>%
+      drop_na(.data[[treatment]]) %>%
+      pull(.data[[weights]]) %>%
       mean()
 
     if (weight_mean != 1) {
@@ -184,8 +182,6 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 #' @noRd
 cat_descriptives <- function(df, cat_vars, treatment, weights) {
 
-  cat_vars <- syms(cat_vars)
-
   df <- df %>%
     mutate_if(is.factor, as.character)
 
@@ -208,11 +204,11 @@ cat_descriptives <- function(df, cat_vars, treatment, weights) {
   if (is.null(treatment)) {
 
     df %>%
-      select(!!!cat_vars, obs_weights) %>%
-      gather(
-        key = Variable,
-        value = Label,
-        !!!cat_vars
+      select(any_of(cat_vars), obs_weights) %>%
+      pivot_longer(
+        cols = any_of(cat_vars),
+        names_to = "Variable",
+        values_to = "Label"
       ) %>%
       group_by(Variable, Label) %>%
       summarise(weighted_count = sum(obs_weights)) %>%
@@ -225,34 +221,32 @@ cat_descriptives <- function(df, cat_vars, treatment, weights) {
 
   } else {
 
-    treatment <- sym(treatment)
-
     df <- df %>%
-      drop_na(!!treatment)
+      drop_na(.data[[treatment]])
 
     p_chi_fisher <- possibly(p_chi_fisher, NA_real_)
 
     df %>%
-      select(!!treatment, !!!cat_vars, obs_weights) %>%
-      gather(
-        key = Variable,
-        value = Label,
-        !!!cat_vars
+      select(.data[[treatment]], any_of(cat_vars), obs_weights) %>%
+      pivot_longer(
+        cols = any_of(cat_vars),
+        names_to = "Variable",
+        values_to = "Label"
       ) %>%
-      group_by(!!treatment, Variable, Label) %>%
+      group_by(.data[[treatment]], Variable, Label) %>%
       summarise(weighted_count = sum(obs_weights)) %>%
       ungroup() %>%
       drop_na() %>%
-      tidyr::complete(!!treatment, tidyr::nesting(Variable, Label)) %>%
-      group_by(!!treatment, Variable) %>%
+      tidyr::complete(.data[[treatment]], tidyr::nesting(Variable, Label)) %>%
+      group_by(.data[[treatment]], Variable) %>%
       mutate(Statistics = proportions(weighted_count, weighted = weighted)) %>%
       ungroup() %>%
       select(-weighted_count) %>%
-      spread(
-        key = !!treatment,
-        value = Statistics
+      pivot_wider(
+        names_from = .data[[treatment]],
+        values_from = "Statistics"
       ) %>%
-      mutate(`P Value` = map_dbl(Variable, p_chi_fisher, df = df, treatment = quo_name(treatment), weight_var = "obs_weights"))
+      mutate(`P Value` = map_dbl(Variable, p_chi_fisher, df = df, treatment = treatment, weight_var = "obs_weights"))
 
   }
 }
@@ -275,10 +269,8 @@ cont_descriptives <- function(df, cont_vars, treatment, weights, nonparametric) 
 
   if (!is.null(treatment)) {
 
-    treatment <- sym(treatment)
-
     df <- df %>%
-      drop_na(!!treatment)
+      drop_na(.data[[treatment]])
 
   }
 
@@ -363,7 +355,7 @@ mean_sd_descriptives <- function(df, cont_vars, treatment) {
     p_anova <- possibly(p_anova, NA_real_)
 
     df %>%
-      group_by(!!treatment) %>%
+      group_by(.data[[treatment]]) %>%
       summarise_at(
         .vars = var_named,
         .funs = list(
@@ -371,13 +363,13 @@ mean_sd_descriptives <- function(df, cont_vars, treatment) {
           "SD" = ~weighted_sd(.x, obs_weights)
         )
       ) %>%
-      gather("Variable", "val", -!!treatment) %>%
+      gather("Variable", "val", -.data[[treatment]]) %>%
       separate(Variable, c("Variable", "mean_sd"), "_(?!.*_)") %>%
       spread(key = mean_sd, value = val) %>%
       mutate(mean_sd = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
       select(-Mean, -SD) %>%
-      spread(!!treatment, mean_sd) %>%
-      mutate(`P Value` = map_dbl(Variable, p_anova, df = df, treatment = quo_name(treatment), weight_var = "obs_weights"))
+      spread(.data[[treatment]], mean_sd) %>%
+      mutate(`P Value` = map_dbl(Variable, p_anova, df = df, treatment = treatment, weight_var = "obs_weights"))
 
   }
 }
@@ -429,7 +421,7 @@ median_IQR_descriptives <- function(df, cont_vars, treatment) {
     p_kruskal <- possibly(p_kruskal, NA_real_)
 
     df %>%
-      group_by(!!treatment) %>%
+      group_by(.data[[treatment]]) %>%
       summarise_at(
         .vars = var_named,
         .funs = list(
@@ -438,13 +430,13 @@ median_IQR_descriptives <- function(df, cont_vars, treatment) {
           "Q3" = ~weighted_quantile(.x, obs_weights, 0.75)
         )
       ) %>%
-      gather("Variable", "val", -!!treatment) %>%
+      gather("Variable", "val", -.data[[treatment]]) %>%
       separate(Variable, c("Variable", "median_iqr"), "_(?!.*_)") %>%
       spread(key = median_iqr, value = val) %>%
       mutate(median_iqr = paste0(round(Median, 2), " [", round(Q1, 2), ", ", round(Q3, 2), "]")) %>%
       select(-Median, -Q1, -Q3) %>%
-      spread(!!treatment, median_iqr) %>%
-      mutate(`P Value` = map_dbl(Variable, p_kruskal, df = df, treatment = quo_name(treatment), weight_var = "obs_weights"))
+      spread(.data[[treatment]], median_iqr) %>%
+      mutate(`P Value` = map_dbl(Variable, p_kruskal, df = df, treatment = treatment, weight_var = "obs_weights"))
 
   }
 }
