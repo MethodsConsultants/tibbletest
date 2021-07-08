@@ -183,7 +183,8 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 cat_descriptives <- function(df, cat_vars, treatment, weights) {
 
   df <- df %>%
-    mutate_if(is.factor, as.character)
+    mutate_if(is.factor, as.character) %>%
+    mutate_if(is.logical, as.character)
 
   if (is.null(weights)) {
 
@@ -334,18 +335,15 @@ mean_sd_descriptives <- function(df, cont_vars, treatment) {
           "SD" = ~weighted_sd(.x, obs_weights)
         )
       ) %>%
-      gather(
-        key = "Variable",
-        value = "val"
+      pivot_longer(
+        cols = everything(),
+        names_to = c("Variable", "mean_sd"),
+        names_sep = "_(?!.*_)",
+        values_to = "val"
       ) %>%
-      separate(
-        col = Variable,
-        into = c("Variable", "mean_sd"),
-        sep = "_(?!.*_)"
-      ) %>%
-      spread(
-        key = mean_sd,
-        value = val
+      pivot_wider(
+        names_from = mean_sd,
+        values_from = val
       ) %>%
       mutate(Statistics = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
       select(-Mean, -SD)
@@ -363,12 +361,22 @@ mean_sd_descriptives <- function(df, cont_vars, treatment) {
           "SD" = ~weighted_sd(.x, obs_weights)
         )
       ) %>%
-      gather("Variable", "val", -.data[[treatment]]) %>%
-      separate(Variable, c("Variable", "mean_sd"), "_(?!.*_)") %>%
-      spread(key = mean_sd, value = val) %>%
+      pivot_longer(
+        cols = -.data[[treatment]],
+        names_to = c("Variable", "mean_sd"),
+        names_sep = "_(?!.*_)",
+        values_to = "val"
+      ) %>%
+      pivot_wider(
+        names_from = mean_sd,
+        values_from = val
+      ) %>%
       mutate(mean_sd = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
       select(-Mean, -SD) %>%
-      spread(.data[[treatment]], mean_sd) %>%
+      pivot_wider(
+        names_from = .data[[treatment]],
+        values_from = mean_sd
+      ) %>%
       mutate(`P Value` = map_dbl(Variable, p_anova, df = df, treatment = treatment, weight_var = "obs_weights"))
 
   }
@@ -400,18 +408,15 @@ median_IQR_descriptives <- function(df, cont_vars, treatment) {
           "Q3" = ~weighted_quantile(.x, obs_weights, 0.75)
         )
       ) %>%
-      gather(
-        key = "Variable",
-        value = "val"
+      pivot_longer(
+        cols = everything(),
+        names_to = c("Variable", "median_iqr"),
+        names_sep = "_(?!.*_)",
+        values_to = "val"
       ) %>%
-      separate(
-        col = Variable,
-        into = c("Variable", "median_iqr"),
-        sep = "_(?!.*_)"
-      ) %>%
-      spread(
-        key = median_iqr,
-        value = val
+      pivot_wider(
+        names_from = median_iqr,
+        values_from = val
       ) %>%
       mutate(Statistics = paste0(round(Median, 2), " [", round(Q1, 2), ", ", round(Q3, 2), "]")) %>%
       select(-Median, -Q1, -Q3)
@@ -430,12 +435,22 @@ median_IQR_descriptives <- function(df, cont_vars, treatment) {
           "Q3" = ~weighted_quantile(.x, obs_weights, 0.75)
         )
       ) %>%
-      gather("Variable", "val", -.data[[treatment]]) %>%
-      separate(Variable, c("Variable", "median_iqr"), "_(?!.*_)") %>%
-      spread(key = median_iqr, value = val) %>%
+      pivot_longer(
+        cols = -.data[[treatment]],
+        names_to = c("Variable", "median_iqr"),
+        names_sep = "_(?!.*_)",
+        values_to = "val"
+      ) %>%
+      pivot_wider(
+        names_from = median_iqr,
+        values_from = val
+      ) %>%
       mutate(median_iqr = paste0(round(Median, 2), " [", round(Q1, 2), ", ", round(Q3, 2), "]")) %>%
       select(-Median, -Q1, -Q3) %>%
-      spread(.data[[treatment]], median_iqr) %>%
+      pivot_wider(
+        names_from = .data[[treatment]],
+        values_from = median_iqr
+      ) %>%
       mutate(`P Value` = map_dbl(Variable, p_kruskal, df = df, treatment = treatment, weight_var = "obs_weights"))
 
   }

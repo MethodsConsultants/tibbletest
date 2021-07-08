@@ -14,13 +14,16 @@ example_dat <- tibbletest::example_dat
 
 ```{r}
 
-df <- example_dat %>%
-  drop_na(treat)
+df <- example_dat
+
 treatment <- "treat"
 cont_vars <- c("sugar_factor", "age")
 
 var_named <- cont_vars %>%
   set_names()
+
+df <- df %>%
+  drop_na(.data[[treatment]])
 
 df <- df %>%
   mutate(obs_weights = 1)
@@ -29,66 +32,51 @@ df %>%
   summarise_at(
     .vars = var_named,
     .funs = list(
-      "Mean" = ~weighted_mean(.x, obs_weights),
-      "SD" = ~weighted_sd(.x, obs_weights)
+      "Median" = ~weighted_quantile(.x, obs_weights, 0.5),
+      "Q1" = ~weighted_quantile(.x, obs_weights, 0.25),
+      "Q3" = ~weighted_quantile(.x, obs_weights, 0.75)
     )
   ) %>%
-  gather(
-    key = "Variable",
-    value = "val"
+  pivot_longer(
+    cols = everything(),
+    names_to = c("Variable", "median_iqr"),
+    names_sep = "_(?!.*_)",
+    values_to = "val"
   ) %>%
-  separate(
-    col = Variable,
-    into = c("Variable", "mean_sd"),
-    sep = "_(?!.*_)"
+  pivot_wider(
+    names_from = median_iqr,
+    values_from = val
   ) %>%
-  spread(
-    key = mean_sd,
-    value = val
-  ) %>%
-  mutate(Statistics = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
-  select(-Mean, -SD)
-
-
-df %>%
-  summarise_at(
-    .vars = var_named,
-    .funs = list(
-      "Mean" = ~weighted_mean(.x, obs_weights),
-      "SD" = ~weighted_sd(.x, obs_weights)
-    )
-  ) %>%
-  gather(
-    key = "Variable",
-    value = "val"
-  ) %>%
-  separate(
-    col = Variable,
-    into = c("Variable", "mean_sd"),
-    sep = "_(?!.*_)"
-  ) %>%
-  spread(
-    key = mean_sd,
-    value = val
-  ) %>%
-  mutate(Statistics = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
-  select(-Mean, -SD)
+  mutate(Statistics = paste0(round(Median, 2), " [", round(Q1, 2), ", ", round(Q3, 2), "]")) %>%
+  select(-Median, -Q1, -Q3)
 
 df %>%
   group_by(.data[[treatment]]) %>%
   summarise_at(
     .vars = var_named,
     .funs = list(
-      "Mean" = ~weighted_mean(.x, obs_weights),
-      "SD" = ~weighted_sd(.x, obs_weights)
+      "Median" = ~weighted_quantile(.x, obs_weights, 0.5),
+      "Q1" = ~weighted_quantile(.x, obs_weights, 0.25),
+      "Q3" = ~weighted_quantile(.x, obs_weights, 0.75)
     )
   ) %>%
-  gather("Variable", "val", -.data[[treatment]]) %>%
-  separate(Variable, c("Variable", "mean_sd"), "_(?!.*_)") %>%
-  spread(key = mean_sd, value = val) %>%
-  mutate(mean_sd = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
-  select(-Mean, -SD) %>%
-  spread(.data[[treatment]], mean_sd) %>%
-  mutate(`P Value` = map_dbl(Variable, p_anova, df = df, treatment = treatment, weight_var = "obs_weights"))
+  pivot_longer(
+    cols = -.data[[treatment]],
+    names_to = c("Variable", "median_iqr"), 
+    names_sep = "_(?!.*_)",
+    values_to = "val"
+  ) %>%
+  pivot_wider(
+    names_from = median_iqr,
+    values_from = val
+  ) %>%
+  mutate(median_iqr = paste0(round(Median, 2), " [", round(Q1, 2), ", ", round(Q3, 2), "]")) %>%
+  select(-Median, -Q1, -Q3) %>%
+  pivot_wider(
+    names_from = .data[[treatment]],
+    values_from = median_iqr
+  ) %>%
+  mutate(`P Value` = map_dbl(Variable, p_kruskal, df = df, treatment = treatment, weight_var = "obs_weights"))
+
 
 ```
