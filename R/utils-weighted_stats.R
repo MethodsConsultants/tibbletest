@@ -9,12 +9,11 @@
 #' @noRd
 weighted_mean <- function(vec, weight_vec = rep(1, length(vec))) {
 
-  assertthat::assert_that(is.numeric(vec))
+  assertthat::assert_that(is.numeric(vec) | is.logical(vec))
   assertthat::assert_that(is.numeric(weight_vec))
   assertthat::assert_that(all(weight_vec > 0))
   assertthat::assert_that(length(vec) == length(weight_vec))
 
-  weight_vec <- weight_vec / mean(weight_vec)
   weighted.mean(vec, weight_vec, na.rm = TRUE)
 
 }

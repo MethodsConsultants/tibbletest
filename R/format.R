@@ -8,7 +8,6 @@
 #' @param remove_duplicates <`logical(1)`> Should repeated variable names and p-values for categorical variables be removed?
 #' If TRUE, variable names and p-values will be presented only once on their own row.
 #' @param remove_false <`logical(1)`> Should binary variables only show the N and percent of TRUE?
-#' @param p_val_digits <`integer(1)`> Number of digits to round p-values.
 #'
 #' @return <`tbl_df`> Formatted tibble
 #'
@@ -16,10 +15,16 @@
 #' @import dplyr
 #'
 #' @export
-format_tbl <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE, remove_false = TRUE, p_val_digits = 3L) {
+format_tbl <- function(obj, ...) {
+  UseMethod("format_tbl")
+}
 
-  assert_that(p_val_digits >= 2)
-  assert_that(class(obj)[1] == "tbl_test")
+#' @inheritParams format_tbl
+#' @param p_val_digits <`integer(1)`> Number of digits to round p-values.
+#'
+#' @exportS3Method format_tbl descriptives
+format_tbl.descriptives <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE, remove_false = TRUE, p_val_digits = 3L) {
+
   assert_that(!is.null(attr(obj, "counts")))
 
   obj_attr <- attr(obj, "counts")
@@ -97,6 +102,108 @@ format_tbl <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE, remove_fals
 
   output <- split_by_var %>%
     map_dfr(format_one_variable)
+
+  if ("Label" %in% colnames(output)) {
+    if (all(output$Label == "")) {
+
+      output <- output %>%
+        select(-Label)
+
+    }
+  }
+
+  if (!is.null(obj_attr) & add_Ns) {
+
+    name_df <- obj_attr %>%
+      mutate(
+        new = paste0(label, " (N=", n, ")")
+      )
+
+    named_vector <- set_names(
+      x = name_df$new,
+      nm = name_df$label
+    )
+
+    output <- output %>%
+      rename_at(vars(names(named_vector)), ~named_vector[.x])
+
+  }
+
+  output
+
+}
+
+#' @inheritParams format_tbl
+#' @param std_diff_digits <`integer(1)`> Number of digits to round standardized differences.
+#'
+#' @exportS3Method format_tbl covariate_balance
+format_tbl.covariate_balance <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE, remove_false = TRUE, std_diff_digits = 1L) {
+
+  assert_that(!is.null(attr(obj, "counts")))
+
+  obj_attr <- attr(obj, "counts")
+
+    obj <- obj %>%
+      mutate(
+        "Absolute Standardized Difference (%)" = as.character(round(`Absolute Standardized Difference (%)`, std_diff_digits))
+      )
+
+  split_by_var <- obj %>%
+    mutate(Variable = factor(Variable, levels = unique(Variable))) %>%
+    group_by(Variable) %>%
+    group_split()
+
+  format_one_variable <- function(tbl) {
+
+    tbl <- tbl %>%
+      mutate(Variable = as.character(Variable))
+
+    if ("Label" %in% colnames(tbl)) {
+      if (all(tbl$Label %in% c("TRUE", "FALSE")) & remove_false) {
+
+        tbl <- tbl %>%
+          filter(Label == "TRUE") %>%
+          mutate(Label = "")
+
+        return(tbl)
+
+      }
+    }
+
+    if (nrow(tbl) == 1) {
+      return(tbl)
+    }
+
+    if (remove_duplicates) {
+
+      blank_row <- rep("", ncol(tbl)) %>%
+        set_names(colnames(tbl))
+
+      out_tbl <- tbl %>%
+        add_row(!!!blank_row, .before = 1) %>%
+        mutate(
+          Variable = c(tbl$Variable[1], rep("", nrow(tbl))),
+          `Absolute Standardized Difference (%)` = c(tbl$`Absolute Standardized Difference (%)`[1], rep("", nrow(tbl)))
+        )
+
+      return(out_tbl)
+    }
+
+    return(tbl)
+
+  }
+
+  output <- split_by_var %>%
+    map_dfr(format_one_variable)
+
+  if ("Label" %in% colnames(output)) {
+    if (all(output$Label == "")) {
+
+      output <- output %>%
+        select(-Label)
+
+    }
+  }
 
   if (!is.null(obj_attr) & add_Ns) {
 

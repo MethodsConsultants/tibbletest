@@ -4,13 +4,7 @@
 \alias{format_tbl}
 \title{Formats the descriptives table outputted by \code{descriptives}.}
 \usage{
-format_tbl(
-  obj,
-  add_Ns = TRUE,
-  remove_duplicates = TRUE,
-  remove_false = TRUE,
-  p_val_digits = 3L
-)
+format_tbl(obj, ...)
 }
 \arguments{
 \item{obj}{<\code{tbl_df}> Tibble outputted by \code{descriptives}.}
@@ -21,8 +15,6 @@ format_tbl(
 If TRUE, variable names and p-values will be presented only once on their own row.}
 
 \item{remove_false}{<\code{logical(1)}> Should binary variables only show the N and percent of TRUE?}
-
-\item{p_val_digits}{<\code{integer(1)}> Number of digits to round p-values.}
 }
 \value{
 <\code{tbl_df}> Formatted tibble

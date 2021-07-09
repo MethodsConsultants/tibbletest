@@ -7,76 +7,24 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(tidyverse)
-
-example_dat <- tibbletest::example_dat
-
+library(tibbletest)
 ```
+
+
 
 ```{r}
 
-df <- example_dat
-
-treatment <- "treat"
-cont_vars <- c("sugar_factor", "age")
-
-var_named <- cont_vars %>%
-  set_names()
-
-df <- df %>%
-  drop_na(.data[[treatment]])
-
-df <- df %>%
-  mutate(obs_weights = 1)
-
-df %>%
-  summarise_at(
-    .vars = var_named,
-    .funs = list(
-      "Median" = ~weighted_quantile(.x, obs_weights, 0.5),
-      "Q1" = ~weighted_quantile(.x, obs_weights, 0.25),
-      "Q3" = ~weighted_quantile(.x, obs_weights, 0.75)
-    )
+example_dat %>%
+  covariate_balance(
+    treatment = "treat",
+    variables = c("age", "sugar_factor", "gender", "happiness"),
+    nonparametric = "age",
+    weights = "weight"
   ) %>%
-  pivot_longer(
-    cols = everything(),
-    names_to = c("Variable", "median_iqr"),
-    names_sep = "_(?!.*_)",
-    values_to = "val"
-  ) %>%
-  pivot_wider(
-    names_from = median_iqr,
-    values_from = val
-  ) %>%
-  mutate(Statistics = paste0(round(Median, 2), " [", round(Q1, 2), ", ", round(Q3, 2), "]")) %>%
-  select(-Median, -Q1, -Q3)
+  format_tbl()
 
-df %>%
-  group_by(.data[[treatment]]) %>%
-  summarise_at(
-    .vars = var_named,
-    .funs = list(
-      "Median" = ~weighted_quantile(.x, obs_weights, 0.5),
-      "Q1" = ~weighted_quantile(.x, obs_weights, 0.25),
-      "Q3" = ~weighted_quantile(.x, obs_weights, 0.75)
-    )
-  ) %>%
-  pivot_longer(
-    cols = -.data[[treatment]],
-    names_to = c("Variable", "median_iqr"), 
-    names_sep = "_(?!.*_)",
-    values_to = "val"
-  ) %>%
-  pivot_wider(
-    names_from = median_iqr,
-    values_from = val
-  ) %>%
-  mutate(median_iqr = paste0(round(Median, 2), " [", round(Q1, 2), ", ", round(Q3, 2), "]")) %>%
-  select(-Median, -Q1, -Q3) %>%
-  pivot_wider(
-    names_from = .data[[treatment]],
-    values_from = median_iqr
-  ) %>%
-  mutate(`P Value` = map_dbl(Variable, p_kruskal, df = df, treatment = treatment, weight_var = "obs_weights"))
+svy_design <- survey::svydesign(~1, data = example_dat, weights = example_dat$weight)
 
+tableone:::svyStdDiff("sugar_factor", "treat", design = svy_design)
 
 ```

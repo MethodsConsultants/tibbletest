@@ -85,22 +85,9 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     count_attr <- tibble(label = "Statistics", n = nrow(df))
   }
 
-  if (!is.null(weights) & !is.null(treatment)) {
-
-    weight_mean <- df %>%
-      drop_na(.data[[treatment]]) %>%
-      pull(.data[[weights]]) %>%
-      mean()
-
-    if (weight_mean != 1) {
-      message("Weights were normalized to a mean of 1 to preserve sample size in significance tests")
-    }
-
-  }
-
   if (length(cat_vars) == 0) {
 
-    cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric)
+    cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric, test_type = "p")
 
     cont_tbl <- cont_tbl %>%
       mutate(
@@ -115,14 +102,14 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
       )
 
     attr(cont_tbl, "counts") <- count_attr
-    class(cont_tbl) <- c("tbl_test", class(cont_tbl))
+    class(cont_tbl) <- c("descriptives", class(cont_tbl))
     return(cont_tbl)
 
   }
 
   if (length(c(cont_vars, nonparametric)) == 0) {
 
-    cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights)
+    cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights, test_type = "p")
 
     cat_tbl <- cat_tbl %>%
       mutate(
@@ -137,13 +124,13 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
       )
 
     attr(cat_tbl, "counts") <- count_attr
-    class(cat_tbl) <- c("tbl_test", class(cat_tbl))
+    class(cat_tbl) <- c("descriptives", class(cat_tbl))
     return(cat_tbl)
 
   }
 
-  cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric)
-  cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights)
+  cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric, test_type = "p")
+  cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights, test_type = "p")
 
   tbl <- bind_rows(cat_tbl, cont_tbl) %>%
     tidyr::replace_na(list(Label = ""))
@@ -161,7 +148,155 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     )
 
   attr(tbl, "counts") <- count_attr
-  class(tbl) <- c("tbl_test", class(tbl))
+  class(tbl) <- c("descriptives", class(tbl))
+  tbl
+
+}
+
+#' Creates a table of summary statistics to test covariate balance
+#'
+#' Generates a table with summary statistics for each variable, including the absolute standardized difference.
+#'
+#' @param df <`tbl_df`> Data frame with treatment and variables of interest as columns.
+#' @param variables <`tidy-select`> Columns to summarize in table. If left blank, will be inferred from data.
+#' @param treatment <`tidy-select`> Treatment column. If left blank, will produce univariate summary statistics.
+#' @param weights <`tidy-select`> Column with observation weights. If left blank, will not use observation weights.
+#' @param nonparametric <`tidy-select`> Columns of continuous variables to calculate median/IQR/non-parametric test.
+#'
+#' @return <`tbl_df`> Tibble with summary statistics split by treatment (optional).
+#'
+#' @import dplyr
+#' @import purrr
+#' @import assertthat
+#'
+#' @export
+covariate_balance <- function(df, treatment = NULL, variables = NULL, weights = NULL, nonparametric = NULL) {
+
+  assert_that(is.data.frame(df))
+  assert_that(!missing(treatment))
+
+  treatment <- df %>%
+    select({{ treatment }}) %>%
+    colnames()
+  assert_that(is_categorical_variable(df, treatment))
+
+  if (!missing(variables)) {
+    variables <- df %>%
+      select({{ variables }}) %>%
+      colnames()
+  }
+
+  if (!missing(weights)) {
+    weights <- df %>%
+      select({{ weights }}) %>%
+      colnames()
+    assert_that(is.numeric(df[[weights]]))
+    assert_that(noNA(df[[weights]]))
+    assert_that(all(df[[weights]] > 0))
+  }
+
+  if (!missing(nonparametric)) {
+    nonparametric <- df %>%
+      select({{ nonparametric }}) %>%
+      colnames()
+    assert_that(all(map_lgl(nonparametric, is_numeric_variable, df = df)))
+  }
+
+
+  if (is.null(variables)) {
+    variables <- colnames(df)
+    variables <- variables[!(variables %in% c(treatment, weights))]
+  }
+
+  cont_lgl <- variables %>%
+    map_lgl(is_numeric_variable, df = df)
+  cont_vars <- variables[cont_lgl]
+
+  cat_lgl <- variables %>%
+    map_lgl(is_categorical_variable, df = df)
+  cat_vars <- variables[cat_lgl]
+
+  if (any(!variables %in% c(cont_vars, cat_vars))) {
+    message(
+      "Variables (",
+      paste(variables[!(variables %in% c(cont_vars, cat_vars))], collapse = ", "),
+      ") were skipped, type must be integer, double, character, logical, or factor"
+    )
+  }
+
+  if (length(cat_vars) == 0 & length(c(cont_vars, nonparametric)) == 0) {
+    stop("No valid variable types")
+  }
+
+  count_attr <- df %>%
+    tidyr::drop_na(.data[[treatment]]) %>%
+    count(.data[[treatment]]) %>%
+    rename(label = treatment)
+
+  if (length(cat_vars) == 0) {
+
+    cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric, test_type = "std_diff")
+
+    cont_tbl <- cont_tbl %>%
+      mutate(
+        Variable = factor(
+          Variable,
+          levels = unique(c(variables, nonparametric))
+        )
+      ) %>%
+      arrange(Variable) %>%
+      mutate(
+        Variable = as.character(Variable)
+      )
+
+    attr(cont_tbl, "counts") <- count_attr
+    class(cont_tbl) <- c("covariate_balance", class(cont_tbl))
+    return(cont_tbl)
+
+  }
+
+  if (length(c(cont_vars, nonparametric)) == 0) {
+
+    cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights, test_type = "std_diff")
+
+    cat_tbl <- cat_tbl %>%
+      mutate(
+        Variable = factor(
+          Variable,
+          levels = variables
+        )
+      ) %>%
+      arrange(Variable) %>%
+      mutate(
+        Variable = as.character(Variable)
+      )
+
+    attr(cat_tbl, "counts") <- count_attr
+    class(cat_tbl) <- c("covariate_balance", class(cat_tbl))
+    return(cat_tbl)
+
+  }
+
+  cont_tbl <- cont_descriptives(df, cont_vars, treatment, weights, nonparametric, test_type = "std_diff")
+  cat_tbl <- cat_descriptives(df, cat_vars, treatment, weights, test_type = "std_diff")
+
+  tbl <- bind_rows(cat_tbl, cont_tbl) %>%
+    tidyr::replace_na(list(Label = ""))
+
+  tbl <- tbl %>%
+    mutate(
+      Variable = factor(
+        Variable,
+        levels = unique(c(variables, nonparametric))
+      )
+    ) %>%
+    arrange(Variable) %>%
+    mutate(
+      Variable = as.character(Variable)
+    )
+
+  attr(tbl, "counts") <- count_attr
+  class(tbl) <- c("covariate_balance", class(tbl))
   tbl
 
 }
@@ -180,7 +315,7 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 #' @import tidyr
 #'
 #' @noRd
-cat_descriptives <- function(df, cat_vars, treatment, weights) {
+cat_descriptives <- function(df, cat_vars, treatment, weights, test_type) {
 
   df <- df %>%
     mutate_if(is.factor, as.character) %>%
@@ -225,9 +360,7 @@ cat_descriptives <- function(df, cat_vars, treatment, weights) {
     df <- df %>%
       drop_na(.data[[treatment]])
 
-    p_chi_fisher <- possibly(p_chi_fisher, NA_real_)
-
-    df %>%
+    tbl <- df %>%
       select(.data[[treatment]], any_of(cat_vars), obs_weights) %>%
       pivot_longer(
         cols = any_of(cat_vars),
@@ -246,9 +379,37 @@ cat_descriptives <- function(df, cat_vars, treatment, weights) {
       pivot_wider(
         names_from = .data[[treatment]],
         values_from = "Statistics"
-      ) %>%
-      mutate(`P Value` = map_dbl(Variable, p_chi_fisher, df = df, treatment = treatment, weight_var = "obs_weights"))
+      )
 
+    if (test_type == "p") {
+
+      p_chi_fisher <- possibly(p_chi_fisher, NA_real_)
+
+      tbl %>%
+        mutate(
+          `P Value` = map_dbl(
+            Variable,
+            p_chi_fisher,
+            df = df,
+            treatment = treatment,
+            weight_var = "obs_weights"
+          )
+        )
+    } else if (test_type == "std_diff") {
+
+      std_diff_categorical <- possibly(std_diff_categorical, NA_real_)
+
+      tbl %>%
+        mutate(
+          "Absolute Standardized Difference (%)" = map_dbl(
+            Variable,
+            std_diff_categorical,
+            df = df,
+            treatment = treatment,
+            weight_var = "obs_weights"
+          )
+        )
+    }
   }
 }
 
@@ -266,7 +427,7 @@ cat_descriptives <- function(df, cat_vars, treatment, weights) {
 #' @import tidyr
 #'
 #' @noRd
-cont_descriptives <- function(df, cont_vars, treatment, weights, nonparametric) {
+cont_descriptives <- function(df, cont_vars, treatment, weights, nonparametric, test_type) {
 
   if (!is.null(treatment)) {
 
@@ -289,7 +450,7 @@ cont_descriptives <- function(df, cont_vars, treatment, weights, nonparametric) 
 
   if (is.null(nonparametric)) {
 
-    parametric_tbl <- mean_sd_descriptives(df, cont_vars, treatment)
+    parametric_tbl <- mean_sd_descriptives(df, cont_vars, treatment, test_type)
     return(parametric_tbl)
 
   }
@@ -298,13 +459,13 @@ cont_descriptives <- function(df, cont_vars, treatment, weights, nonparametric) 
 
   if (length(cont_vars) == 0) {
 
-    nonparametric_tbl <- median_IQR_descriptives(df, nonparametric, treatment)
+    nonparametric_tbl <- median_IQR_descriptives(df, nonparametric, treatment, test_type)
     return(nonparametric_tbl)
 
   }
 
-  parametric_tbl <- mean_sd_descriptives(df, cont_vars, treatment)
-  nonparametric_tbl <- median_IQR_descriptives(df, nonparametric, treatment)
+  parametric_tbl <- mean_sd_descriptives(df, cont_vars, treatment, test_type)
+  nonparametric_tbl <- median_IQR_descriptives(df, nonparametric, treatment, test_type)
 
   bind_rows(parametric_tbl, nonparametric_tbl)
 
@@ -319,7 +480,7 @@ cont_descriptives <- function(df, cont_vars, treatment, weights, nonparametric) 
 #' @import purrr
 #'
 #' @noRd
-mean_sd_descriptives <- function(df, cont_vars, treatment) {
+mean_sd_descriptives <- function(df, cont_vars, treatment, test_type) {
 
   ## Set names to force consistent syntax in summarise_at
   var_named <- cont_vars %>%
@@ -350,9 +511,7 @@ mean_sd_descriptives <- function(df, cont_vars, treatment) {
 
   } else {
 
-    p_anova <- possibly(p_anova, NA_real_)
-
-    df %>%
+    tbl <- df %>%
       group_by(.data[[treatment]]) %>%
       summarise_at(
         .vars = var_named,
@@ -376,9 +535,37 @@ mean_sd_descriptives <- function(df, cont_vars, treatment) {
       pivot_wider(
         names_from = .data[[treatment]],
         values_from = mean_sd
-      ) %>%
-      mutate(`P Value` = map_dbl(Variable, p_anova, df = df, treatment = treatment, weight_var = "obs_weights"))
+      )
 
+    if (test_type == "p") {
+
+      p_anova <- possibly(p_anova, NA_real_)
+
+      tbl %>%
+        mutate(
+          `P Value` = map_dbl(
+            Variable,
+            p_anova,
+            df = df,
+            treatment = treatment,
+            weight_var = "obs_weights"
+          )
+        )
+    } else if (test_type == "std_diff") {
+
+      std_diff_continuous <- possibly(std_diff_continuous, NA_real_)
+
+      tbl %>%
+        mutate(
+          "Absolute Standardized Difference (%)" = map_dbl(
+            Variable,
+            std_diff_continuous,
+            df = df,
+            treatment = treatment,
+            weight_var = "obs_weights"
+          )
+        )
+    }
   }
 }
 
@@ -391,7 +578,7 @@ mean_sd_descriptives <- function(df, cont_vars, treatment) {
 #' @import purrr
 #'
 #' @noRd
-median_IQR_descriptives <- function(df, cont_vars, treatment) {
+median_IQR_descriptives <- function(df, cont_vars, treatment, test_type) {
 
   ## Set names to force consistent syntax in summarise_at
   var_named <- cont_vars %>%
@@ -423,9 +610,7 @@ median_IQR_descriptives <- function(df, cont_vars, treatment) {
 
   } else {
 
-    p_kruskal <- possibly(p_kruskal, NA_real_)
-
-    df %>%
+    tbl <- df %>%
       group_by(.data[[treatment]]) %>%
       summarise_at(
         .vars = var_named,
@@ -450,8 +635,36 @@ median_IQR_descriptives <- function(df, cont_vars, treatment) {
       pivot_wider(
         names_from = .data[[treatment]],
         values_from = median_iqr
-      ) %>%
-      mutate(`P Value` = map_dbl(Variable, p_kruskal, df = df, treatment = treatment, weight_var = "obs_weights"))
+      )
 
+    if (test_type == "p") {
+
+      p_kruskal <- possibly(p_kruskal, NA_real_)
+
+      tbl %>%
+        mutate(
+          `P Value` = map_dbl(
+            Variable,
+            p_kruskal,
+            df = df,
+            treatment = treatment,
+            weight_var = "obs_weights"
+          )
+        )
+    } else if (test_type == "std_diff") {
+
+      std_diff_continuous <- possibly(std_diff_continuous, NA_real_)
+
+      tbl %>%
+        mutate(
+          "Absolute Standardized Difference (%)" = map_dbl(
+            Variable,
+            std_diff_continuous,
+            df = df,
+            treatment = treatment,
+            weight_var = "obs_weights"
+          )
+        )
+    }
   }
 }

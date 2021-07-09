@@ -133,7 +133,10 @@ add_propensity_weights <- function(df, treatment, ivs, impute_missing = FALSE) {
 
   propensity_score <- ranger_prediction %>%
     transpose() %>%
-    map2_dbl(df[[treatment]], ~ pluck(.x, .y))
+    map2_dbl(
+      as.character(df[[treatment]]),
+      ~ pluck(.x, .y)
+    )
 
   df %>%
     mutate(
