@@ -26,13 +26,27 @@ std_diff_continuous <- function(df, var, treatment, weight_var) {
       )
     )
 
-  mean_diff <- summary_tbl$mean[1] - summary_tbl$mean[2]
+  calculate_std_diff <- function(x) {
 
-  pooled_sd <- sqrt(
-    (summary_tbl$sd[1] ^ 2 + summary_tbl$sd[2] ^ 2) / 2
-  )
+    mean_diff <- x$mean[1] - x$mean[2]
 
-  abs(100 * mean_diff / pooled_sd)
+    pooled_sd <- sqrt(
+      (x$sd[1] ^ 2 + x$sd[2] ^ 2) / 2
+    )
+
+    abs(100 * mean_diff / pooled_sd)
+
+  }
+
+  combn(1:nrow(summary_tbl), 2, simplify = FALSE) %>%
+    map(
+      ~ summary_tbl %>%
+        slice(.x)
+    ) %>%
+    map_dbl(
+      calculate_std_diff
+    ) %>%
+    max()
 
 }
 
@@ -97,21 +111,34 @@ std_diff_categorical <- function(df, var, treatment, weight_var) {
     weighted_props[[treatment]]
   )
 
-  covariance_matrices <- weighted_props_list %>%
+  calculate_std_diff <- function(x) {
+
+    covariance_matrices <- x %>%
+      map(
+        function(p) {
+          vars <- p * (1 - p)
+          covs <- -outer(p, p)
+          diag(covs) <- vars
+          drop(covs)
+        }
+      )
+
+    covariance_mean <- reduce(covariance_matrices, `+`) / length(covariance_matrices)
+
+    prop_diff <- x %>%
+      reduce(`-`)
+
+    return(as.numeric(100 * sqrt(t(prop_diff) %*% MASS::ginv(covariance_mean) %*% prop_diff)))
+
+  }
+
+  combn(1:length(weighted_props_list), 2, simplify = FALSE) %>%
     map(
-      function(p) {
-        vars <- p * (1 - p)
-        covs <- -outer(p, p)
-        diag(covs) <- vars
-        drop(covs)
-      }
-    )
-
-  covariance_mean <- reduce(covariance_matrices, `+`) / length(covariance_matrices)
-
-  prop_diff <- weighted_props_list %>%
-    reduce(`-`)
-
-  as.numeric(100 * sqrt(t(prop_diff) %*% MASS::ginv(covariance_mean) %*% prop_diff))
+      ~ `[`(weighted_props_list, .x)
+    ) %>%
+    map_dbl(
+      calculate_std_diff
+    ) %>%
+    max()
 
 }
