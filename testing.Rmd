@@ -14,10 +14,10 @@ library(tibbletest)
 
 example_dat %>%
   covariate_balance(
-    treatment = "treat",
-    variables = c("age", "sugar_factor", "gender", "happiness"),
+    treatment = "treat2",
+    variables = c("age", "sugar_factor", "gender", "happiness", "happy"),
     nonparametric = "age",
-    weights = "weight"
+    weights = "no_weight"
   ) %>%
   format_tbl()
 
@@ -29,9 +29,6 @@ df <- example_dat
 treatment <- "treat2"
 var <- "happy"
 weight_var <- "no_weight"
-
-df <- df %>%
-  drop_na(.data[[var]], .data[[treatment]])
 
 weighted_props <- df %>%
   drop_na(.data[[treatment]], .data[[var]]) %>%
@@ -48,71 +45,25 @@ weighted_props_list <- split(
   weighted_props[[treatment]]
 )
 
-x <- weighted_props_list[1:2]
+calculate_std_diff <- function(x) {
+  
+  prop_diff <- x[[1]] - x[[2]]
 
-prop_diff <- x[[1]] - x[[2]]
-
-var_1 <- x[[1]] * (1 - x[[1]])
-var_2 <- x[[2]] * (1 - x[[2]])
-
-pooled_sd <- sqrt(
-  (var_1 + var_2) / 2
-)
-
-abs(100 * prop_diff / pooled_sd) %>%
-  max()
-
-calculate_std_diff <- function(y) {
-
-  prop_diff <- y$p[1] - y$p[2]
-
-  var_1 <- y$p[1] * (1 - y$p[1])
-  var_2 <- y$p[2] * (1 - y$p[2])
+  var_1 <- x[[1]] * (1 - x[[1]])
+  var_2 <- x[[2]] * (1 - x[[2]])
   
   pooled_sd <- sqrt(
     (var_1 + var_2) / 2
   )
   
-  abs(100 * prop_diff / pooled_sd)
-
-}
-  
-x %>%
-  group_by(.data[[var]]) %>%
-  group_split() %>%
-  map_dbl(calculate_std_diff) %>%
-  max()
-
-
-calculate_std_diff_two_groups <- function(x) {
-  
-  calculate_std_diff <- function(y) {
-  
-    prop_diff <- y$p[1] - y$p[2]
-  
-    var_1 <- y$p[1] * (1 - y$p[1])
-    var_2 <- y$p[2] * (1 - y$p[2])
-    
-    pooled_sd <- sqrt(
-      (var_1 + var_2) / 2
-    )
-    
-    abs(100 * prop_diff / pooled_sd)
-  
-  }
-  
-  x %>%
-    group_by(.data[[var]]) %>%
-    group_split() %>%
-    map_dbl(calculate_std_diff) %>%
+  abs(100 * prop_diff / pooled_sd) %>%
     max()
-  
+
 }
 
-combn(1:3, 2, simplify = FALSE) %>%
+combn(1:length(weighted_props_list), 2, simplify = FALSE) %>%
   map(
-    ~ weighted_props %>%
-      slice(.x)
+    ~ `[`(weighted_props_list, .x)
   ) %>%
   map_dbl(
     calculate_std_diff
@@ -120,3 +71,9 @@ combn(1:3, 2, simplify = FALSE) %>%
   max()
 
 ```
+
+
+
+
+
+

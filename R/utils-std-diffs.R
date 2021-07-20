@@ -50,40 +50,6 @@ std_diff_continuous <- function(df, var, treatment, weight_var) {
 
 }
 
-#' Helper function which calculates the absolute standardize difference of a binary variable between two groups
-#'
-#' @inheritParams std_diff_continuous
-#'
-#' @return <`numeric(1)`> Standardized Difference
-#'
-#' @import dplyr
-#'
-#' @noRd
-std_diff_binary <- function(df, var, treatment, weight_var) {
-
-  df <- df %>%
-    drop_na(.data[[var]], .data[[treatment]])
-
-  summary_tbl <- df %>%
-    group_by(.data[[treatment]]) %>%
-    summarise_at(
-      var,
-      c(p = ~ weighted_mean(.x, weight_vec = .data[[weight_var]]))
-    )
-
-  prop_diff <- summary_tbl$p[1] - summary_tbl$p[2]
-
-  var_1 <- summary_tbl$p[1] * (1 - summary_tbl$p[1])
-  var_2 <- summary_tbl$p[2] * (1 - summary_tbl$p[2])
-
-  pooled_sd <- sqrt(
-    (var_1 + var_2) / 2
-  )
-
-  abs(100 * prop_diff / pooled_sd)
-
-}
-
 #' Helper function which calculates the absolute standardize difference of a categorical variable between two groups
 #'
 #' @inheritParams std_diff_continuous
@@ -103,7 +69,6 @@ std_diff_categorical <- function(df, var, treatment, weight_var) {
       sum
     ) %>%
     mutate(p = .data[[weight_var]] / sum(.data[[weight_var]])) %>%
-    slice(-1) %>%
     ungroup()
 
   weighted_props_list <- split(
@@ -113,22 +78,17 @@ std_diff_categorical <- function(df, var, treatment, weight_var) {
 
   calculate_std_diff <- function(x) {
 
-    covariance_matrices <- x %>%
-      map(
-        function(p) {
-          vars <- p * (1 - p)
-          covs <- -outer(p, p)
-          diag(covs) <- vars
-          drop(covs)
-        }
-      )
+    prop_diff <- x[[1]] - x[[2]]
 
-    covariance_mean <- reduce(covariance_matrices, `+`) / length(covariance_matrices)
+    var_1 <- x[[1]] * (1 - x[[1]])
+    var_2 <- x[[2]] * (1 - x[[2]])
 
-    prop_diff <- x %>%
-      reduce(`-`)
+    pooled_sd <- sqrt(
+      (var_1 + var_2) / 2
+    )
 
-    return(as.numeric(100 * sqrt(t(prop_diff) %*% MASS::ginv(covariance_mean) %*% prop_diff)))
+    abs(100 * prop_diff / pooled_sd) %>%
+      max()
 
   }
 
