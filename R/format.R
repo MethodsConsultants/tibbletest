@@ -19,6 +19,8 @@ format_tbl <- function(obj, ...) {
   UseMethod("format_tbl")
 }
 
+#' Formats the descriptives table outputted by `descriptives`.
+#'
 #' @inheritParams format_tbl
 #' @param p_val_digits <`integer(1)`> Number of digits to round p-values.
 #'
@@ -133,6 +135,8 @@ format_tbl.descriptives <- function(obj, add_Ns = TRUE, remove_duplicates = TRUE
 
 }
 
+#' Formats the descriptives table outputted by `covariate_balance`.
+#'
 #' @inheritParams format_tbl
 #' @param std_diff_digits <`integer(1)`> Number of digits to round standardized differences.
 #'
@@ -223,5 +227,73 @@ format_tbl.covariate_balance <- function(obj, add_Ns = TRUE, remove_duplicates =
   }
 
   output
+
+}
+
+
+#' Creates a Love plot comparing standardized differences before and after weighting
+#'
+#' @param unadj <`tbl_df`> Tibble outputted by `covariate_balance()` without weighting.
+#' @param adj <`tbl_df`> Tibble outputted by `covariate_balance()` after propensity score weighting.
+#'
+#' @return <`ggplot`> ggplot2 Love plot
+#'
+#' @import dplyr
+#' @import ggplot2
+#'
+#' @export
+love_plot <- function(unadj, adj) {
+
+  unadj <- unadj %>%
+    select(
+      Variable,
+      `Absolute Standardized Difference (%)`
+    ) %>%
+    mutate(`Absolute Standardized Difference (%)` = as.numeric(`Absolute Standardized Difference (%)`)) %>%
+    tidyr::drop_na() %>%
+    distinct() %>%
+    rename(
+      "Unweighted" = `Absolute Standardized Difference (%)`
+    )
+
+  adj <- adj %>%
+    select(
+      Variable,
+      `Absolute Standardized Difference (%)`
+    ) %>%
+    mutate(`Absolute Standardized Difference (%)` = as.numeric(`Absolute Standardized Difference (%)`)) %>%
+    tidyr::drop_na() %>%
+    distinct() %>%
+    rename(
+      "Weighted" = `Absolute Standardized Difference (%)`
+    )
+
+  plot_dat <- inner_join(
+    unadj,
+    adj,
+    by = "Variable"
+  ) %>%
+    arrange(desc(Unweighted)) %>%
+    mutate(Variable = fct_rev(as_factor(Variable))) %>%
+    pivot_longer(
+      cols = -Variable,
+      names_to = "type",
+      values_to = "std_diff"
+    )
+
+  plot_dat %>%
+    ggplot(
+      aes(x = Variable, y = std_diff, color = type)
+    ) +
+    geom_point(size = 2) +
+    theme_bw() +
+    coord_flip() +
+    labs(
+      x = NULL,
+      y = "Absolute Standardized Difference (%)",
+      color = NULL
+    ) +
+    theme(text = element_text(size = 14)) +
+    geom_hline(yintercept=10, lty=2)
 
 }

@@ -145,51 +145,65 @@ adj_covariates_tbl_new <- dat %>%
 
 ```{r}
 
-unadj <- covariates_tbl_new
-adj <- adj_covariates_tbl_new
-
-unadj <- unadj %>%
-  select(
-    Variable,
-    `Absolute Standardized Difference (%)`
+love_plot <- function(unadj, adj) {
+  
+  unadj <- unadj %>%
+    select(
+      Variable,
+      `Absolute Standardized Difference (%)`
+    ) %>%
+    mutate(`Absolute Standardized Difference (%)` = as.numeric(`Absolute Standardized Difference (%)`)) %>%
+    drop_na() %>%
+    distinct() %>%
+    rename(
+      "Unweighted" = `Absolute Standardized Difference (%)`
+    )
+  
+  adj <- adj %>%
+    select(
+      Variable,
+      `Absolute Standardized Difference (%)`
+    ) %>%
+    mutate(`Absolute Standardized Difference (%)` = as.numeric(`Absolute Standardized Difference (%)`)) %>%
+    drop_na() %>%
+    distinct() %>%
+    rename(
+      "Weighted" = `Absolute Standardized Difference (%)`
+    )
+  
+  plot_dat <- inner_join(
+    unadj,
+    adj,
+    by = "Variable"
   ) %>%
-  mutate(`Absolute Standardized Difference (%)` = as.numeric(`Absolute Standardized Difference (%)`)) %>%
-  drop_na() %>%
-  rename(
-    "Unweighted" = `Absolute Standardized Difference (%)`
-  )
+    arrange(desc(Unweighted)) %>%
+    mutate(Variable = fct_rev(as_factor(Variable))) %>%
+    pivot_longer(
+      cols = -Variable,
+      names_to = "type",
+      values_to = "std_diff"
+    )
+  
+  plot_dat %>%
+    ggplot(
+      aes(x = Variable, y = std_diff, color = type)
+    ) +
+    geom_point(size = 2) +
+    theme_bw() +
+    coord_flip() +
+    labs(
+      x = NULL,
+      y = "Absolute Standardized Difference (%)",
+      color = NULL
+    ) +
+    theme(text = element_text(size = 14)) +
+    geom_hline(yintercept=10, lty=2)
+  
+}
 
-adj <- adj %>%
-  select(
-    Variable,
-    `Absolute Standardized Difference (%)`
-  ) %>%
-  mutate(`Absolute Standardized Difference (%)` = as.numeric(`Absolute Standardized Difference (%)`)) %>%
-  drop_na() %>%
-  rename(
-    "Weighted" = `Absolute Standardized Difference (%)`
-  )
-
-plot_dat <- inner_join(
-  unadj,
-  adj,
-  by = "Variable"
-) %>%
-  arrange(desc(Unweighted)) %>%
-  mutate(Variable = fct_rev(as_factor(Variable))) %>%
-  pivot_longer(
-    cols = -Variable,
-    names_to = "type",
-    values_to = "std_diff"
-  )
-
-plot_dat %>%
-  ggplot(
-    aes(x = Variable, y = std_diff, color = type)
-  ) +
-  geom_point() +
-  theme_bw() +
-  coord_flip()
+t <- love_plot(
+  unadj = covariates_tbl_new,
+  adj = adj_covariates_tbl_new
+)
 
 ```
-
