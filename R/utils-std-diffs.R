@@ -38,7 +38,7 @@ std_diff_continuous <- function(df, var, treatment, weight_var) {
 
   }
 
-  combn(1:nrow(summary_tbl), 2, simplify = FALSE) %>%
+  utils::combn(1:nrow(summary_tbl), 2, simplify = FALSE) %>%
     map(
       ~ summary_tbl %>%
         slice(.x)
@@ -92,7 +92,7 @@ std_diff_categorical <- function(df, var, treatment, weight_var) {
 
   }
 
-  combn(1:length(weighted_props_list), 2, simplify = FALSE) %>%
+  utils::combn(1:length(weighted_props_list), 2, simplify = FALSE) %>%
     map(
       ~ `[`(weighted_props_list, .x)
     ) %>%

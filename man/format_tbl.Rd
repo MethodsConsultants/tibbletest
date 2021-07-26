@@ -2,12 +2,34 @@
 % Please edit documentation in R/format.R
 \name{format_tbl}
 \alias{format_tbl}
-\title{Formats the descriptives table outputted by \code{descriptives}.}
+\alias{format_tbl.descriptives}
+\alias{format_tbl.covariate_balance}
+\title{Formats the descriptives table outputted by \code{descriptives} or \code{covariate_balance}.}
 \usage{
-format_tbl(obj, ...)
+format_tbl(tbl, ...)
+
+\method{format_tbl}{descriptives}(
+  tbl,
+  add_Ns = TRUE,
+  remove_duplicates = TRUE,
+  remove_false = TRUE,
+  p_val_digits = 3L,
+  ...
+)
+
+\method{format_tbl}{covariate_balance}(
+  tbl,
+  add_Ns = TRUE,
+  remove_duplicates = TRUE,
+  remove_false = TRUE,
+  std_diff_digits = 1L,
+  ...
+)
 }
 \arguments{
-\item{obj}{<\code{tbl_df}> Tibble outputted by \code{descriptives}.}
+\item{tbl}{<\code{tbl_df}> Tibble outputted by \code{descriptives} or \code{covariate_balance}.}
+
+\item{\dots}{Additional arguments passed to/from other methods.}
 
 \item{add_Ns}{<\code{logical(1)}> Should treatment counts be added to column names?}
 
@@ -15,11 +37,23 @@ format_tbl(obj, ...)
 If TRUE, variable names and p-values will be presented only once on their own row.}
 
 \item{remove_false}{<\code{logical(1)}> Should binary variables only show the N and percent of TRUE?}
+
+\item{p_val_digits}{<\code{integer(1)}> Number of digits to round p-values.}
+
+\item{std_diff_digits}{<\code{integer(1)}> Number of digits to round standardized differences.}
 }
 \value{
 <\code{tbl_df}> Formatted tibble
 }
 \description{
 Allows for easy formatting of summary statistics table. Treatment group counts are added to the column names,
-duplicated categorical variable names and p-values are removed, and p-values are rounded.
+duplicated categorical variable names removed, and TRUE/FALSE variables are collapsed to a single row. P-values
+and standardized differences are rounded for \code{descriptives} and \code{covariate_balance} objects respectively.
 }
+\section{Methods (by class)}{
+\itemize{
+\item \code{descriptives}: Formats the descriptives table outputted by \code{descriptives}.
+
+\item \code{covariate_balance}: Formats the descriptives table outputted by \code{covariate_balance}.
+}}
+

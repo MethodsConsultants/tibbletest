@@ -6,7 +6,7 @@
 \alias{tibbletest-package}
 \title{tibbletest: Clean Descriptives Tables with Significance Tests by Group}
 \description{
-To do
+A tool to easily create a table of descriptive statitics split by treatment group.
 }
 \author{
 \strong{Maintainer}: Michael Battaglia \email{mbattagl@methodsconsultants.com}

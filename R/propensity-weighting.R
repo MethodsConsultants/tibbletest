@@ -105,7 +105,7 @@ add_propensity_weights <- function(df, treatment, ivs, impute_missing = FALSE) {
 
     } else {
 
-      median_value <- median(fit_df[[ivs]], na.rm = TRUE)
+      median_value <- stats::median(fit_df[[ivs]], na.rm = TRUE)
 
       fit_df <- fit_df %>%
         mutate("{ivs}" := replace_na(.data[[ivs]], median_value))
@@ -144,7 +144,7 @@ add_propensity_weights <- function(df, treatment, ivs, impute_missing = FALSE) {
     ) %>%
     group_by(.data[[treatment]]) %>%
     mutate(
-      propensity_weight = propensity_weight / mean(propensity_weight)
+      propensity_weight = .data$propensity_weight / mean(.data$propensity_weight)
     ) %>%
     ungroup()
 

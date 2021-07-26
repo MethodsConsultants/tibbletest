@@ -1,6 +1,6 @@
 #' Creates a table of summary statistics
 #'
-#' Generates a table with summary statistics for each variable, optionally split by a grouping variable.
+#' \code{descriptives()} calculates descriptive statistics for variables of interest in your data frame.
 #'
 #' @param df <`tbl_df`> Data frame with treatment and variables of interest as columns.
 #' @param variables <`tidy-select`> Columns to summarize in table. If left blank, will be inferred from data.
@@ -92,13 +92,13 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     cont_tbl <- cont_tbl %>%
       mutate(
         Variable = factor(
-          Variable,
+          .data$Variable,
           levels = unique(c(variables, nonparametric))
         )
       ) %>%
-      arrange(Variable) %>%
+      arrange(.data$Variable) %>%
       mutate(
-        Variable = as.character(Variable)
+        Variable = as.character(.data$Variable)
       )
 
     attr(cont_tbl, "counts") <- count_attr
@@ -114,13 +114,13 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     cat_tbl <- cat_tbl %>%
       mutate(
         Variable = factor(
-          Variable,
+          .data$Variable,
           levels = variables
         )
       ) %>%
-      arrange(Variable) %>%
+      arrange(.data$Variable) %>%
       mutate(
-        Variable = as.character(Variable)
+        Variable = as.character(.data$Variable)
       )
 
     attr(cat_tbl, "counts") <- count_attr
@@ -138,13 +138,13 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
   tbl <- tbl %>%
     mutate(
       Variable = factor(
-        Variable,
+        .data$Variable,
         levels = unique(c(variables, nonparametric))
       )
     ) %>%
-    arrange(Variable) %>%
+    arrange(.data$Variable) %>%
     mutate(
-      Variable = as.character(Variable)
+      Variable = as.character(.data$Variable)
     )
 
   attr(tbl, "counts") <- count_attr
@@ -240,13 +240,13 @@ covariate_balance <- function(df, treatment = NULL, variables = NULL, weights = 
     cont_tbl <- cont_tbl %>%
       mutate(
         Variable = factor(
-          Variable,
+          .data$Variable,
           levels = unique(c(variables, nonparametric))
         )
       ) %>%
-      arrange(Variable) %>%
+      arrange(.data$Variable) %>%
       mutate(
-        Variable = as.character(Variable)
+        Variable = as.character(.data$Variable)
       )
 
     attr(cont_tbl, "counts") <- count_attr
@@ -262,13 +262,13 @@ covariate_balance <- function(df, treatment = NULL, variables = NULL, weights = 
     cat_tbl <- cat_tbl %>%
       mutate(
         Variable = factor(
-          Variable,
+          .data$Variable,
           levels = variables
         )
       ) %>%
-      arrange(Variable) %>%
+      arrange(.data$Variable) %>%
       mutate(
-        Variable = as.character(Variable)
+        Variable = as.character(.data$Variable)
       )
 
     attr(cat_tbl, "counts") <- count_attr
@@ -286,13 +286,13 @@ covariate_balance <- function(df, treatment = NULL, variables = NULL, weights = 
   tbl <- tbl %>%
     mutate(
       Variable = factor(
-        Variable,
+        .data$Variable,
         levels = unique(c(variables, nonparametric))
       )
     ) %>%
-    arrange(Variable) %>%
+    arrange(.data$Variable) %>%
     mutate(
-      Variable = as.character(Variable)
+      Variable = as.character(.data$Variable)
     )
 
   attr(tbl, "counts") <- count_attr
@@ -340,20 +340,20 @@ cat_descriptives <- function(df, cat_vars, treatment, weights, test_type) {
   if (is.null(treatment)) {
 
     df %>%
-      select(any_of(cat_vars), obs_weights) %>%
+      select(any_of(cat_vars), .data$obs_weights) %>%
       pivot_longer(
         cols = any_of(cat_vars),
         names_to = "Variable",
         values_to = "Label"
       ) %>%
-      group_by(Variable, Label) %>%
-      summarise(weighted_count = sum(obs_weights)) %>%
+      group_by(.data$Variable, .data$Label) %>%
+      summarise(weighted_count = sum(.data$obs_weights)) %>%
       ungroup() %>%
       drop_na() %>%
-      group_by(Variable) %>%
-      mutate(Statistics = proportions(weighted_count, weighted = weighted)) %>%
+      group_by(.data$Variable) %>%
+      mutate(Statistics = proportions(.data$weighted_count, weighted = weighted)) %>%
       ungroup() %>%
-      select(-weighted_count)
+      select(-.data$weighted_count)
 
   } else {
 
@@ -361,21 +361,24 @@ cat_descriptives <- function(df, cat_vars, treatment, weights, test_type) {
       drop_na(.data[[treatment]])
 
     tbl <- df %>%
-      select(.data[[treatment]], any_of(cat_vars), obs_weights) %>%
+      select(.data[[treatment]], any_of(cat_vars), .data$obs_weights) %>%
       pivot_longer(
         cols = any_of(cat_vars),
         names_to = "Variable",
         values_to = "Label"
       ) %>%
-      group_by(.data[[treatment]], Variable, Label) %>%
-      summarise(weighted_count = sum(obs_weights)) %>%
+      group_by(.data[[treatment]], .data$Variable, .data$Label) %>%
+      summarise(weighted_count = sum(.data$obs_weights)) %>%
       ungroup() %>%
       drop_na() %>%
-      tidyr::complete(.data[[treatment]], tidyr::nesting(Variable, Label)) %>%
-      group_by(.data[[treatment]], Variable) %>%
-      mutate(Statistics = proportions(weighted_count, weighted = weighted)) %>%
+      tidyr::complete(
+        .data[[treatment]],
+        tidyr::nesting(Variable, Label)
+      ) %>%
+      group_by(.data[[treatment]], .data$Variable) %>%
+      mutate(Statistics = proportions(.data$weighted_count, weighted = weighted)) %>%
       ungroup() %>%
-      select(-weighted_count) %>%
+      select(-.data$weighted_count) %>%
       pivot_wider(
         names_from = .data[[treatment]],
         values_from = "Statistics"
@@ -388,7 +391,7 @@ cat_descriptives <- function(df, cat_vars, treatment, weights, test_type) {
       tbl %>%
         mutate(
           `P Value` = map_dbl(
-            Variable,
+            .data$Variable,
             p_chi_fisher,
             df = df,
             treatment = treatment,
@@ -402,7 +405,7 @@ cat_descriptives <- function(df, cat_vars, treatment, weights, test_type) {
       tbl %>%
         mutate(
           "Absolute Standardized Difference (%)" = map_dbl(
-            Variable,
+            .data$Variable,
             std_diff_categorical,
             df = df,
             treatment = treatment,
@@ -492,8 +495,8 @@ mean_sd_descriptives <- function(df, cont_vars, treatment, test_type) {
       summarise_at(
         .vars = var_named,
         .funs = list(
-          "Mean" = ~weighted_mean(.x, obs_weights),
-          "SD" = ~weighted_sd(.x, obs_weights)
+          "Mean" = ~weighted_mean(.x, .data$obs_weights),
+          "SD" = ~weighted_sd(.x, .data$obs_weights)
         )
       ) %>%
       pivot_longer(
@@ -503,11 +506,11 @@ mean_sd_descriptives <- function(df, cont_vars, treatment, test_type) {
         values_to = "val"
       ) %>%
       pivot_wider(
-        names_from = mean_sd,
-        values_from = val
+        names_from = .data$mean_sd,
+        values_from = .data$val
       ) %>%
-      mutate(Statistics = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
-      select(-Mean, -SD)
+      mutate(Statistics = paste0(round(.data$Mean, 2), " (", round(.data$SD, 2), ")")) %>%
+      select(-.data$Mean, -.data$SD)
 
   } else {
 
@@ -516,8 +519,8 @@ mean_sd_descriptives <- function(df, cont_vars, treatment, test_type) {
       summarise_at(
         .vars = var_named,
         .funs = list(
-          "Mean" = ~weighted_mean(.x, obs_weights),
-          "SD" = ~weighted_sd(.x, obs_weights)
+          "Mean" = ~weighted_mean(.x, .data$obs_weights),
+          "SD" = ~weighted_sd(.x, .data$obs_weights)
         )
       ) %>%
       pivot_longer(
@@ -527,14 +530,14 @@ mean_sd_descriptives <- function(df, cont_vars, treatment, test_type) {
         values_to = "val"
       ) %>%
       pivot_wider(
-        names_from = mean_sd,
-        values_from = val
+        names_from = .data$mean_sd,
+        values_from = .data$val
       ) %>%
-      mutate(mean_sd = paste0(round(Mean, 2), " (", round(SD, 2), ")")) %>%
-      select(-Mean, -SD) %>%
+      mutate(mean_sd = paste0(round(.data$Mean, 2), " (", round(.data$SD, 2), ")")) %>%
+      select(-.data$Mean, -.data$SD) %>%
       pivot_wider(
         names_from = .data[[treatment]],
-        values_from = mean_sd
+        values_from = .data$mean_sd
       )
 
     if (test_type == "p") {
@@ -544,7 +547,7 @@ mean_sd_descriptives <- function(df, cont_vars, treatment, test_type) {
       tbl %>%
         mutate(
           `P Value` = map_dbl(
-            Variable,
+            .data$Variable,
             p_anova,
             df = df,
             treatment = treatment,
@@ -558,7 +561,7 @@ mean_sd_descriptives <- function(df, cont_vars, treatment, test_type) {
       tbl %>%
         mutate(
           "Absolute Standardized Difference (%)" = map_dbl(
-            Variable,
+            .data$Variable,
             std_diff_continuous,
             df = df,
             treatment = treatment,
@@ -590,9 +593,9 @@ median_IQR_descriptives <- function(df, cont_vars, treatment, test_type) {
       summarise_at(
         .vars = var_named,
         .funs = list(
-          "Median" = ~weighted_quantile(.x, obs_weights, 0.5),
-          "Q1" = ~weighted_quantile(.x, obs_weights, 0.25),
-          "Q3" = ~weighted_quantile(.x, obs_weights, 0.75)
+          "Median" = ~weighted_quantile(.x, .data$obs_weights, 0.5),
+          "Q1" = ~weighted_quantile(.x, .data$obs_weights, 0.25),
+          "Q3" = ~weighted_quantile(.x, .data$obs_weights, 0.75)
         )
       ) %>%
       pivot_longer(
@@ -602,11 +605,11 @@ median_IQR_descriptives <- function(df, cont_vars, treatment, test_type) {
         values_to = "val"
       ) %>%
       pivot_wider(
-        names_from = median_iqr,
-        values_from = val
+        names_from = .data$median_iqr,
+        values_from = .data$val
       ) %>%
-      mutate(Statistics = paste0(round(Median, 2), " [", round(Q1, 2), ", ", round(Q3, 2), "]")) %>%
-      select(-Median, -Q1, -Q3)
+      mutate(Statistics = paste0(round(.data$Median, 2), " [", round(.data$Q1, 2), ", ", round(.data$Q3, 2), "]")) %>%
+      select(-.data$Median, -.data$Q1, -.data$Q3)
 
   } else {
 
@@ -615,9 +618,9 @@ median_IQR_descriptives <- function(df, cont_vars, treatment, test_type) {
       summarise_at(
         .vars = var_named,
         .funs = list(
-          "Median" = ~weighted_quantile(.x, obs_weights, 0.5),
-          "Q1" = ~weighted_quantile(.x, obs_weights, 0.25),
-          "Q3" = ~weighted_quantile(.x, obs_weights, 0.75)
+          "Median" = ~weighted_quantile(.x, .data$obs_weights, 0.5),
+          "Q1" = ~weighted_quantile(.x, .data$obs_weights, 0.25),
+          "Q3" = ~weighted_quantile(.x, .data$obs_weights, 0.75)
         )
       ) %>%
       pivot_longer(
@@ -627,14 +630,14 @@ median_IQR_descriptives <- function(df, cont_vars, treatment, test_type) {
         values_to = "val"
       ) %>%
       pivot_wider(
-        names_from = median_iqr,
-        values_from = val
+        names_from = .data$median_iqr,
+        values_from = .data$val
       ) %>%
-      mutate(median_iqr = paste0(round(Median, 2), " [", round(Q1, 2), ", ", round(Q3, 2), "]")) %>%
-      select(-Median, -Q1, -Q3) %>%
+      mutate(median_iqr = paste0(round(.data$Median, 2), " [", round(.data$Q1, 2), ", ", round(.data$Q3, 2), "]")) %>%
+      select(-.data$Median, -.data$Q1, -.data$Q3) %>%
       pivot_wider(
         names_from = .data[[treatment]],
-        values_from = median_iqr
+        values_from = .data$median_iqr
       )
 
     if (test_type == "p") {
@@ -644,7 +647,7 @@ median_IQR_descriptives <- function(df, cont_vars, treatment, test_type) {
       tbl %>%
         mutate(
           `P Value` = map_dbl(
-            Variable,
+            .data$Variable,
             p_kruskal,
             df = df,
             treatment = treatment,
@@ -658,7 +661,7 @@ median_IQR_descriptives <- function(df, cont_vars, treatment, test_type) {
       tbl %>%
         mutate(
           "Absolute Standardized Difference (%)" = map_dbl(
-            Variable,
+            .data$Variable,
             std_diff_continuous,
             df = df,
             treatment = treatment,

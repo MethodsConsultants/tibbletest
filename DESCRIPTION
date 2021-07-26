@@ -5,7 +5,7 @@ Authors@R: as.person(c(
     "Michael Battaglia <mbattagl@methodsconsultants.com> [aut, cre]", 
     "Caleb Scheidel <caleb@methodsconsultants.com> [aut]"
   ))
-Description: To do
+Description: A tool to easily create a table of descriptive statitics split by treatment group.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -28,7 +28,8 @@ Imports:
     VIM,
     withr,
     MASS,
-    ggplot2
+    ggplot2,
+    forcats
 Suggests: 
     testthat (>= 2.1.0),
     covr

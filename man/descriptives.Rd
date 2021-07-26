@@ -27,5 +27,5 @@ descriptives(
 <\code{tbl_df}> Tibble with summary statistics split by treatment (optional).
 }
 \description{
-Generates a table with summary statistics for each variable, optionally split by a grouping variable.
+\code{descriptives()} calculates descriptive statistics for variables of interest in your data frame.
 }

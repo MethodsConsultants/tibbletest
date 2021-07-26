@@ -14,7 +14,7 @@ weighted_mean <- function(vec, weight_vec = rep(1, length(vec))) {
   assertthat::assert_that(all(weight_vec > 0))
   assertthat::assert_that(length(vec) == length(weight_vec))
 
-  weighted.mean(vec, weight_vec, na.rm = TRUE)
+  stats::weighted.mean(vec, weight_vec, na.rm = TRUE)
 
 }
 

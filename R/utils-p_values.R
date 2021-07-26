@@ -47,8 +47,7 @@ p_chi_fisher <- function(df, var, treatment, weight_var) {
 
     p_val <- stats::fisher.test(
       x = as.factor(df[[var]]),
-      y = as.factor(df[[treatment]]),
-      simulate.p.value = TRUE
+      y = as.factor(df[[treatment]])
     ) %>%
       pluck("p.value")
 
@@ -103,7 +102,7 @@ p_anova <- function(df, var, treatment, weight_var) {
   paste0(var, " ~ ", treatment) %>%
     stats::lm(data = df) %>%
     stats::anova() %>%
-    pull(`Pr(>F)`) %>%
+    pull(.data$`Pr(>F)`) %>%
     purrr::pluck(1)
 
 }
