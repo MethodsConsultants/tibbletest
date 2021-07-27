@@ -48,7 +48,6 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
     assert_that(all(map_lgl(nonparametric, is_numeric_variable, df = df)))
   }
 
-
   if (is.null(variables)) {
     variables <- colnames(df)
     variables <- variables[!(variables %in% c(treatment, weights))]
@@ -318,8 +317,12 @@ covariate_balance <- function(df, treatment = NULL, variables = NULL, weights = 
 cat_descriptives <- function(df, cat_vars, treatment, weights, test_type) {
 
   df <- df %>%
-    mutate_if(is.factor, as.character) %>%
-    mutate_if(is.logical, as.character)
+    mutate_at(
+      vars(
+        any_of(cat_vars), treatment
+      ),
+      as.character
+    )
 
   if (is.null(weights)) {
 
