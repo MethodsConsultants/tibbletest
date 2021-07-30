@@ -1,6 +1,23 @@
 #' Creates a table of summary statistics
 #'
-#' \code{descriptives()} calculates descriptive statistics for variables of interest in your data frame.
+#' \code{descriptives()} creates a data frame which presents summary statistics stratified by a grouping variable.
+#' It presents mean and SD (or median and IQR) for continuous variables and frequency and percentage for categorical variables.
+#' P-values are also presented which test for significant differences in the variables across the groups. The output of this
+#' function is intended to be passed to the \code{\link{format_tbl}} function to clean up the table to be used in a report.
+#'
+#' @section Summary Statistics: By default the mean and SD for continuous variables and frequency and percentage
+#' for categorical variables are presented. By specifying a continuous variable in the \code{nonparametric}
+#' argument, median and interquartile range (IQR) will be presented instead for that variable.
+#'
+#' @section Significance Testing: If a treatment group column is specified in the \code{treatment} argument, significance testing
+#' will be performed. For continuous variables, p-values from a one-way ANOVA are presented. Note that if there are only two treatment
+#' groups this is equivalent to a t-test. If a continuous variable is specified in the \code{nonparametric} argument, then a Kruskal-Wallis
+#' test is performed instead. Note that if there are only two treatment groups this is equivalent to the Mann-Whitney test.
+#' For categorical variables, either a chi-squared or Fisher's exact test is performed depending on the distribution of the variable.
+#'
+#' @section Weights: By specifying a column in the \code{weights} argument, weighted summary statistics and p-values will be presented.
+#' Weighted p-values are all calculated using the \code{survey} package. \code{survey::svychisq()}, \code{survey::regTermTest()}, and
+#' \code{survey::svyranktest()} are used for weighted versions of the chi-squared, ANOVA, and Kruskal-Wallis respectively.
 #'
 #' @param df <`tbl_df`> Data frame with treatment and variables of interest as columns.
 #' @param variables <`tidy-select`> Columns to summarize in table. If left blank, will be inferred from data.
