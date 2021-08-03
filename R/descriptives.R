@@ -1,4 +1,4 @@
-#' Creates a table of summary statistics
+#' Creates a data frame which presents a descriptive comparison of variables across a grouping variable.
 #'
 #' \code{descriptives()} creates a data frame which presents summary statistics stratified by a grouping variable.
 #' It presents mean and SD (or median and IQR) for continuous variables and frequency and percentage for categorical variables.
@@ -16,8 +16,8 @@
 #' For categorical variables, either a chi-squared or Fisher's exact test is performed depending on the distribution of the variable.
 #'
 #' @section Weights: By specifying a column in the \code{weights} argument, weighted summary statistics and p-values will be presented.
-#' Weighted p-values are all calculated using the \code{survey} package. \code{survey::svychisq()}, \code{survey::regTermTest()}, and
-#' \code{survey::svyranktest()} are used for weighted versions of the chi-squared, ANOVA, and Kruskal-Wallis respectively.
+#' Weighted p-values are all calculated using the \code{survey} package. \code{\link[survey]{svychisq}}, \code{\link[survey]{regTermTest}}, and
+#' \code{\link[survey]{svyranktest}} are used for weighted versions of the chi-squared, ANOVA, and Kruskal-Wallis respectively.
 #'
 #' @param df <`tbl_df`> Data frame with treatment and variables of interest as columns.
 #' @param variables <`tidy-select`> Columns to summarize in table. If left blank, will be inferred from data.
