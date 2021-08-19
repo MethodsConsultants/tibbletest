@@ -25,6 +25,12 @@
 #' @param weights <`tidy-select`> Column with observation weights. If left blank, will not use observation weights.
 #' @param nonparametric <`tidy-select`> Columns of continuous variables to calculate median/IQR/non-parametric test.
 #'
+#' @name descriptives
+NULL
+#> NULL
+
+#' @rdname descriptives
+#'
 #' @import dplyr
 #' @import purrr
 #' @import assertthat
@@ -167,15 +173,7 @@ descriptives <- function(df, treatment = NULL, variables = NULL, weights = NULL,
 
 }
 
-#' @describeIn descriptives Creates a table of summary statistics to test covariate balance
-#'
-#' Generates a table with summary statistics for each variable, including the absolute standardized difference.
-#'
-#' @param df <`tbl_df`> Data frame with treatment and variables of interest as columns.
-#' @param variables <`tidy-select`> Columns to summarize in table. If left blank, will be inferred from data.
-#' @param treatment <`tidy-select`> Treatment column.
-#' @param weights <`tidy-select`> Column with observation weights. If left blank, will not use observation weights.
-#' @param nonparametric <`tidy-select`> Columns of continuous variables to calculate median/IQR.
+#' @rdname descriptives
 #'
 #' @import dplyr
 #' @import purrr

@@ -24,16 +24,13 @@ covariate_balance(
 \arguments{
 \item{df}{<\code{tbl_df}> Data frame with treatment and variables of interest as columns.}
 
-\item{treatment}{<\code{tidy-select}> Treatment column.}
+\item{treatment}{<\code{tidy-select}> Treatment column. If left blank, will produce univariate summary statistics.}
 
 \item{variables}{<\code{tidy-select}> Columns to summarize in table. If left blank, will be inferred from data.}
 
 \item{weights}{<\code{tidy-select}> Column with observation weights. If left blank, will not use observation weights.}
 
-\item{nonparametric}{<\code{tidy-select}> Columns of continuous variables to calculate median/IQR.}
-}
-\value{
-<\code{tbl_df}> Tibble with summary statistics split by treatment (optional).
+\item{nonparametric}{<\code{tidy-select}> Columns of continuous variables to calculate median/IQR/non-parametric test.}
 }
 \description{
 \code{descriptives()} creates a data frame which presents summary statistics stratified by a grouping variable.
@@ -41,13 +38,6 @@ It presents mean and SD (or median and IQR) for continuous variables and frequen
 P-values are also presented which test for significant differences in the variables across the groups. The output of this
 function is intended to be passed to the \code{\link{format_tbl}} function to clean up the table to be used in a report.
 }
-\section{Functions}{
-\itemize{
-\item \code{covariate_balance}: Creates a table of summary statistics to test covariate balance
-
-Generates a table with summary statistics for each variable, including the absolute standardized difference.
-}}
-
 \section{Summary Statistics}{
  By default the mean and SD for continuous variables and frequency and percentage
 for categorical variables are presented. By specifying a continuous variable in the \code{nonparametric}
